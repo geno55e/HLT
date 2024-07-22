@@ -16,7 +16,7 @@ instr_fluke_multi = rm.open_resource('ASRL5::INSTR', read_termination = '\r\n', 
 instr_fluke_multi.set_visa_attribute(constants.VI_ATTR_ASRL_FLOW_CNTRL, constants.VI_ASRL_FLOW_RTS_CTS)
 # instr_fluke_multi.write('*RST;*CLS;CONF:VOLT:DC 1;:VOLT:DC:NPLC 2;:TRIG:SOUR IMM;:INIT')
 instr_fluke_multi.write('*RST;*CLS')
-instr_fluke_multi.write(':SYSTM:REM')
+instr_fluke_multi.write(':SYST:REM')
 instr_fluke_multi.write('CONF:VOLT:DC 10;:VOLT:DC:NPLC 2')
 instr_fluke_multi.write('SAMP:COUNT 1')
 instr_fluke_multi.write(':TRIG:SOUR IMM')
@@ -39,6 +39,7 @@ while x<5:
     x+=1
     
 instr_hm8143_power.write('OP0')
+instr_fluke_multi.write(':SYST:LOC')
 instr_fluke_multi.write('*RST;*CLS')
 
 
