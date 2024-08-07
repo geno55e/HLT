@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from plot import plot
 
 window_height = 680
 window_width = 1065
@@ -153,7 +154,7 @@ Eingabe_Zielwert_Variable.grid(row=16, column=4, pady=2)
 Button_Start_Messung.grid(row=17, column=0, columnspan=2, pady=2)
 Button_Stop_Messung.grid(row=17, column=4, columnspan=2, pady=2)
 
-
+plot(master)
 
 master.mainloop()
 
