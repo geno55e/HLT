@@ -7,6 +7,7 @@ from time import sleep
 from collections import deque
 from random import randint
 
+
 # HM8143 Spannungsquelle
 def HM8143_Quelle_remoteOn():
     rm = pyvisa.ResourceManager()
@@ -186,6 +187,7 @@ def Fluke_bestimme_Messbereich(messgroesse):
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(0)
 
+
 def Fluke_LeseGleichspannung(messbereich):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
@@ -202,7 +204,7 @@ def messung():
     ziel = float(Eingabe_Zielwert_Variable.get())
 
     for x in np.arange(start, ziel, schritt):
-        print(round(x,2))
+        print(round(x, 2))
 
 
 window_height = 680
@@ -252,11 +254,11 @@ Label_Strom_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom lin
 Label_Strom_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom rechts")
 
 Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Strom_links_HM8143_Quelle.insert(0,"0.095")
+Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.095")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", command=HM8143_Quelle_Toggle_Ausgang)
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Strom_rechts_HM8143_Quelle.insert(0,"0.095")
+Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "0.095")
 Eingabe_Strom_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
 
 # HM8143 Design
@@ -293,13 +295,13 @@ Combo_Wellenform_HM8150_Freq.current(0)
 Combo_Wellenform_HM8150_Freq.bind("<<ComboboxSelected>>", (lambda event: HM8150_Freq_Wellenform(Combo_Wellenform_HM8150_Freq.get())))
 
 Eingabe_Amplitude_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
-Eingabe_Amplitude_HM8150_Freq.insert(0,"0.5")
+Eingabe_Amplitude_HM8150_Freq.insert(0, "0.5")
 Eingabe_Amplitude_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())))
 Eingabe_Frequenz_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
-Eingabe_Frequenz_HM8150_Freq.insert(0,"1000")
+Eingabe_Frequenz_HM8150_Freq.insert(0, "1000")
 Eingabe_Frequenz_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())))
 Eingabe_Offset_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
-Eingabe_Offset_HM8150_Freq.insert(0,"0")
+Eingabe_Offset_HM8150_Freq.insert(0, "0")
 Eingabe_Offset_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Offset(Eingabe_Offset_HM8150_Freq.get())))
 
 Label_Output_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Output")
@@ -372,11 +374,11 @@ Combo_Variable = ttk.Combobox(
 Combo_Variable.current(0)
 
 Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Startwert_Variable.insert(0,"0")
+Eingabe_Startwert_Variable.insert(0, "0")
 Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Schrittweite_Variable.insert(0,"0.03")
+Eingabe_Schrittweite_Variable.insert(0, "0.03")
 Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Zielwert_Variable.insert(0,"1")
+Eingabe_Zielwert_Variable.insert(0, "1")
 
 Label_Auswahl_Parameter = tk.Label(Frame_Messung, text="Parameter Auswahl")
 Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Eingabe")
@@ -411,14 +413,10 @@ Combo_Parameter.grid(column=0, row=3, sticky="W", padx=5, pady=1)
 Eingabe_Parameter.grid(column=1, row=3, sticky="W", columnspan=3, padx=5, pady=1)
 
 
-
 Button_Start_Messung.grid(column=0, row=4, columnspan=2, padx=10, pady=10)
 Button_Stop_Messung.grid(column=2, row=4, columnspan=2, padx=10, pady=10)
 
 plot(Frame_Plot)
 
 
-
 master.mainloop()
-
-
