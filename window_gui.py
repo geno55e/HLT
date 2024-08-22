@@ -92,6 +92,7 @@ window_width = 1065
 
 master = tk.Tk()
 master.geometry("1065x500")
+master.title("Halbleiterpraktikumleittechnik")
 
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master)
@@ -101,8 +102,10 @@ Frame_Plot.place(relx=0.4, y=0, relwidth=0.6, relheight=1)
 
 
 # Lokal
-Frame_Geraete_lokal = ttk.Frame(master)
-Button_Geraete_lokal = ttk.Button(master, text="Geräte lokal bedienen")
+Frame_Lokal = ttk.Frame(Frame_Steuerung)
+Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen")
+Frame_Lokal.pack()
+Button_Geraete_lokal.pack(padx=10, pady=10)
 
 
 # HM8143 Power
@@ -180,10 +183,10 @@ Combo_Wellenform_HM8150_Freq.grid(column=0, row=1, sticky="W", padx=5, pady=1)
 Eingabe_Amplitude_HM8150_Freq.grid(column=1, row=1, padx=5, pady=1)
 Eingabe_Frequenz_HM8150_Freq.grid(column=2, row=1, padx=5, pady=1)
 Eingabe_Offset_HM8150_Freq.grid(column=3, row=1, padx=5, pady=1)
-Label_Output_Button_HM8150_Freq.grid(column=1, row=2, padx=5, pady=1)
-Label_Offset_Button_HM8150_Freq.grid(column=2, row=2, padx=5, pady=1)
-Button_Output_on_off_HM8150_Freq.grid(column=1, row=3, padx=5, pady=1)
-Button_Offset_on_off_HM8150_Freq.grid(column=2, row=3, padx=5, pady=1)
+Label_Output_Button_HM8150_Freq.grid(column=0, row=2, columnspan=2, padx=5, pady=1)
+Label_Offset_Button_HM8150_Freq.grid(column=2, row=2, columnspan=2, padx=5, pady=1)
+Button_Output_on_off_HM8150_Freq.grid(column=0, row=3, columnspan=2, padx=5, pady=1)
+Button_Offset_on_off_HM8150_Freq.grid(column=2, row=3, columnspan=2, padx=5, pady=1)
 
 
 # Fluke
