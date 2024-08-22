@@ -104,6 +104,8 @@ Frame_Plot.place(relx=0.4, y=0, relwidth=0.6, relheight=1)
 # Lokal
 Frame_Lokal = ttk.Frame(Frame_Steuerung)
 Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen")
+
+# Lokal Design
 Frame_Lokal.pack()
 Button_Geraete_lokal.pack(padx=10, pady=10)
 
