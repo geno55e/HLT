@@ -1,3 +1,5 @@
+import random
+
 import pyvisa
 import tkinter as tk
 import numpy as np
@@ -258,6 +260,7 @@ def ConvertMessgroesseToSCPI():
         case "Widerstand":
             return ":CONF:RES "
 
+
 def setIntegrationTime():
     match Combo_Messgroesse_Fluke.get():
         case "Gleichspannung":
@@ -300,7 +303,7 @@ def Fluke_Messe_Wert():
     integrationszeit = setIntegrationTime().upper()
 
     print(messgroesse+messbereich+trig+integrationszeit)
-    gemessener_wert = "WERT GEMESSEN"
+    gemessener_wert = random.randint(1, 30)
     # zum TESTEN auskommentiert
     # rm = pyvisa.ResourceManager()
     # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
@@ -309,7 +312,7 @@ def Fluke_Messe_Wert():
     # my_instrument.write('*RST;*CLS;syst:local')
     # my_instrument.close()
 
-    # return gemessener_wert
+    return gemessener_wert
 
 
 def messung():
