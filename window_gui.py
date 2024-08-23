@@ -7,6 +7,10 @@ from time import sleep
 from collections import deque
 from random import randint
 
+fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
+fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
+fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
+
 
 # HM8143 Spannungsquelle
 def HM8143_Quelle_remoteOn():
@@ -97,6 +101,8 @@ def HM8150_Freq_Wellenform(wellenform):
         case "Sägezahn":
             print("Sägezahn")
             my_instrument.write('RMP')
+        case _:
+            print(wellenform+" nicht bekannt")
 
     my_instrument.close()
 
@@ -172,8 +178,59 @@ def HM8150_Freq_Offset(offset):
 
 
 # Fluke
-def Fluke_bestimme_Messbereich(messgroesse):
-    match messgroesse:
+def ConvertMessbereichToDecimalString():
+    match Combo_Messbereich_Fluke.get():
+        case "100uA":
+            return "0,000001"
+
+        case "1mA":
+            return "0,001"
+
+        case "10mA":
+            return "0,01"
+
+        case "100mV" | "100mA":
+            return "0,1"
+
+        case "400mA":
+            return "0,4"
+
+        case "1V" | "1A":
+            return "1"
+
+        case "3A":
+            return "3"
+
+        case "10V" | "10A" | "10 Ohm":
+            return "10"
+
+        case "100V" | "100 Ohm":
+            return "100"
+
+        case "1000V" | "1k Ohm":
+            return "1000"
+
+        case "10k Ohm":
+            return "10000"
+
+        case "100k Ohm":
+            return "100000"
+
+        case "1M Ohm":
+            return "1000000"
+
+        case "100M Ohm":
+            return "100000000"
+
+        case "1G Ohm":
+            return "1000000000"
+
+        case _:
+            return "0"
+
+
+def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
+    match messgroesse_eingestellt:
         case "Gleichspannung" | "Wechselspannung":
             print("Spannung")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Spannung
@@ -188,31 +245,85 @@ def Fluke_bestimme_Messbereich(messgroesse):
             Combo_Messbereich_Fluke.current(0)
 
 
-def Fluke_LeseGleichspannung(messbereich):
-    rm = pyvisa.ResourceManager()
-    my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
-    my_instrument.write('*RST;*CLS;CONF:VOLT:DC '+str(messbereich)+';:VOLT:DC:NPLC 1;:TRIG:SOUR BUS')
-    spannung = my_instrument.query(':INIT;*TRG;FETCH?')
-    my_instrument.write('*RST;*CLS;syst:local')
-    my_instrument.close()
-    return spannung
+def ConvertMessgroesseToSCPI():
+    match Combo_Messgroesse_Fluke.get():
+        case "Gleichspannung":
+            return ":CONF:VOLT:DC "
+        case "Wechselspannung":
+            return ":CONF:VOLT:AC "
+        case "Gleichstrom":
+            return ":CONF:CURR:DC "
+        case "Wechselstrom":
+            return ":CONF:CURR:AC "
+        case "Widerstand":
+            return ":CONF:RES "
+
+def setIntegrationTime():
+    match Combo_Messgroesse_Fluke.get():
+        case "Gleichspannung":
+            return ":volt:dc:nplc 1"
+        case "Wechselspannung":
+            return ":volt:ac:band 200"
+        case "Gleichstrom":
+            return ":curr:dc:nplc 1"
+        case "Wechselstrom":
+            return ":curr:ac:band 200"
+        case "Widerstand":
+            return ":res:nplc 1"
+
+
+def Fluke_Messe_Wert():
+
+    # Messgröße Fluke
+    # vdc = ":CONF:VOLT:DC "
+    # vac = ":CONF:VOLT:AC "
+    # adc = ":CONF:CURR:DC "
+    # aac = ":CONF:CURR:AC "
+    # res = ":CONF:RES "
+
+    # Integrationszeit Fluke
+    # vdc_nplc = ":volt:dc:nplc 1"
+    # vac_nplc = ":volt:ac:band 200"
+    # adc_nplc = ":curr:dc:nplc 1"
+    # aac_nplc = ":curr:ac:band 200"
+    # res_nplc = ":res:nplc 1"
+
+    # Trigger
+    trig = ";:TRIG:DEL 0"
+    # trig = ";:TRIG:SOUR BUS"
+
+    # Commands Fluke
+    # Aufbau: ...Messgröße+Messbereich+Integrationszeit+Trigger
+
+    messgroesse = ConvertMessgroesseToSCPI()
+    messbereich = ConvertMessbereichToDecimalString()
+    integrationszeit = setIntegrationTime().upper()
+
+    print(messgroesse+messbereich+trig+integrationszeit)
+    gemessener_wert = "WERT GEMESSEN"
+    # zum TESTEN auskommentiert
+    # rm = pyvisa.ResourceManager()
+    # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
+    # my_instrument.write('*RST;*CLS;CONF:VOLT:DC '+str(messbereich)+';:VOLT:DC:NPLC 1;:TRIG:SOUR BUS')
+    # gemessener_wert = my_instrument.query(':INIT;*TRG;FETCH?')
+    # my_instrument.write('*RST;*CLS;syst:local')
+    # my_instrument.close()
+
+    # return gemessener_wert
 
 
 def messung():
-    start = float(Eingabe_Startwert_Variable.get())
-    schritt = float(Eingabe_Schrittweite_Variable.get())
-    ziel = float(Eingabe_Zielwert_Variable.get())
-
-    for x in np.arange(start, ziel, schritt):
-        print(round(x, 2))
+    Fluke_Messe_Wert()
+    # start = float(Eingabe_Startwert_Variable.get())
+    # schritt = float(Eingabe_Schrittweite_Variable.get())
+    # ziel = float(Eingabe_Zielwert_Variable.get())
+    #
+    # for x in np.arange(start, ziel, schritt):
+    #     print(round(x, 2))
 
 
 window_height = 680
 window_width = 1065
-
-fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
-fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
-fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
 
 # ##########################################################################
 
