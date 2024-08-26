@@ -331,6 +331,7 @@ def messung():
         ax.plot(x, y)
         canvas.draw()
 
+
 def ploti():
     ax.plot(x, y)
     canvas.draw()
