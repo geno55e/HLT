@@ -1,13 +1,14 @@
 import random
 
+import matplotlib.pyplot as plt
 import pyvisa
 import tkinter as tk
 import numpy as np
 from tkinter import ttk
 from plot import plot
 from time import sleep
-from collections import deque
-from random import randint
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
@@ -302,7 +303,7 @@ def Fluke_Messe_Wert():
     messbereich = ConvertMessbereichToDecimalString()
     integrationszeit = setIntegrationTime().upper()
 
-    print(messgroesse+messbereich+trig+integrationszeit)
+    # print(messgroesse+messbereich+trig+integrationszeit)
     gemessener_wert = random.randint(1, 30)
     # zum TESTEN auskommentiert
     # rm = pyvisa.ResourceManager()
@@ -315,15 +316,24 @@ def Fluke_Messe_Wert():
     return gemessener_wert
 
 
-def messung():
-    Fluke_Messe_Wert()
-    # start = float(Eingabe_Startwert_Variable.get())
-    # schritt = float(Eingabe_Schrittweite_Variable.get())
-    # ziel = float(Eingabe_Zielwert_Variable.get())
-    #
-    # for x in np.arange(start, ziel, schritt):
-    #     print(round(x, 2))
+x = []
+y = []
 
+
+def messung():
+    start = float(Eingabe_Startwert_Variable.get())
+    schritt = float(Eingabe_Schrittweite_Variable.get())
+    ziel = float(Eingabe_Zielwert_Variable.get())
+
+    for var in np.arange(start, ziel, schritt):
+        x.append(var)
+        y.append(Fluke_Messe_Wert())
+        ax.plot(x, y)
+        canvas.draw()
+
+def ploti():
+    ax.plot(x, y)
+    canvas.draw()
 
 window_height = 680
 window_width = 1065
@@ -334,6 +344,7 @@ window_width = 1065
 master = tk.Tk()
 master.geometry("1065x500")
 master.title("HalbleiterLeitTechnik")
+
 
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master)
@@ -530,7 +541,14 @@ Eingabe_Parameter.grid(column=1, row=3, sticky="W", columnspan=3, padx=5, pady=1
 Button_Start_Messung.grid(column=0, row=4, columnspan=2, padx=10, pady=10)
 Button_Stop_Messung.grid(column=2, row=4, columnspan=2, padx=10, pady=10)
 
-plot(Frame_Plot)
+
+fig, ax = plt.subplots()
+canvas = FigureCanvasTkAgg(fig, master=master)
+canvas.get_tk_widget().pack(side="left")
+
+
+
+#plot(Frame_Plot)
 
 
 master.mainloop()
