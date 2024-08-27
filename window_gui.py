@@ -126,7 +126,7 @@ def HM8150_Freq_OffsetOff():
 
 def HM8150_Freq_Toggle_Offset():
     if Button_Offset_on_off_HM8150_Freq.cget("text") == 'Off':
-        HM8150_Freq_OffsetOff()
+        HM8150_Freq_OffsetOn()
         Button_Offset_on_off_HM8150_Freq["text"] = "On"
     else:
         HM8150_Freq_OffsetOff()
@@ -149,7 +149,7 @@ def HM8150_Freq_OutputOff():
 
 def HM8150_Freq_Toggle_Output():
     if Button_Output_on_off_HM8150_Freq.cget("text") == 'Off':
-        HM8150_Freq_OutputOff()
+        HM8150_Freq_OutputOn()
         Button_Output_on_off_HM8150_Freq["text"] = "On"
     else:
         HM8150_Freq_OutputOff()
