@@ -276,7 +276,7 @@ def setIntegrationTime():
             return ":res:nplc 1"
 
 
-def Fluke_Messe_Wert():
+def Fluke_Messe_Wert(x):
 
     # Messgröße Fluke
     # vdc = ":CONF:VOLT:DC "
@@ -304,7 +304,7 @@ def Fluke_Messe_Wert():
     integrationszeit = setIntegrationTime().upper()
 
     # print(messgroesse+messbereich+trig+integrationszeit)
-    gemessener_wert = random.randint(1, 30)
+    gemessener_wert = np.sin(x)
     # zum TESTEN auskommentiert
     # rm = pyvisa.ResourceManager()
     # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
@@ -316,25 +316,34 @@ def Fluke_Messe_Wert():
     return gemessener_wert
 
 
-x = []
-y = []
+x_i = 0
+var_x = []
+mess_y = []
 
 
 def messung():
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
-
-    for var in np.arange(start, ziel, schritt):
-        x.append(var)
-        y.append(Fluke_Messe_Wert())
-        ax.plot(x, y)
+    start_schritt_ziel = np.arange(start, ziel, schritt)
+    print(start_schritt_ziel[1,])
+    global var_x
+    global mess_y
+    global x_i
+    var_x = []
+    mess_y = []
+    x_i = 0
+    while x_i < len(start_schritt_ziel):
+        ax.clear()
+        var_x.append(start_schritt_ziel[x_i,])
+        mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,]))
+        ax.plot(var_x, mess_y)
         canvas.draw()
+        master.update()
+        sleep(0.3)
+        x_i += 1
 
 
-def ploti():
-    ax.plot(x, y)
-    canvas.draw()
 
 window_height = 680
 window_width = 1065
@@ -544,7 +553,7 @@ Button_Stop_Messung.grid(column=2, row=4, columnspan=2, padx=10, pady=10)
 
 
 fig, ax = plt.subplots()
-canvas = FigureCanvasTkAgg(fig, master=master)
+canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
 
