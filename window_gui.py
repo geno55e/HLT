@@ -558,7 +558,4 @@ canvas.get_tk_widget().pack(side="left")
 
 
 
-#plot(Frame_Plot)
-
-
 master.mainloop()
