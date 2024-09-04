@@ -276,7 +276,13 @@ def setIntegrationTime():
             return ":res:nplc 1"
 
 
-def Fluke_Messe_Wert(x):
+def MessungStop():
+    global messungStop
+    print("STOP")
+    messungStop = True
+
+
+def Fluke_Messe_Wert(v,p):
 
     # Messgröße Fluke
     # vdc = ":CONF:VOLT:DC "
@@ -304,7 +310,7 @@ def Fluke_Messe_Wert(x):
     integrationszeit = setIntegrationTime().upper()
 
     # print(messgroesse+messbereich+trig+integrationszeit)
-    gemessener_wert = np.sin(x)
+    gemessener_wert = p*v*v
     # zum TESTEN auskommentiert
     # rm = pyvisa.ResourceManager()
     # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
@@ -319,6 +325,7 @@ def Fluke_Messe_Wert(x):
 x_i = 0
 var_x = []
 mess_y = []
+messungStop = False
 
 
 def messung():
@@ -326,33 +333,51 @@ def messung():
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
     start_schritt_ziel = np.arange(start, ziel, schritt)
-    print(start_schritt_ziel[1,])
+
     global var_x
     global mess_y
     global x_i
+    global messungStop
+
+    messungStop = False
     var_x = []
     mess_y = []
     x_i = 0
-    while x_i < len(start_schritt_ziel):
-        ax.clear()
-        var_x.append(start_schritt_ziel[x_i,])
-        mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,]))
-        ax.plot(var_x, mess_y)
-        canvas.draw()
-        master.update()
-        sleep(0.3)
-        x_i += 1
+    para = ([1])
+
+    messdaten = np.transpose(start_schritt_ziel)
+    p_i = 0
+    while p_i < len(para):  # gehe Parameter durch
+        var_x = []
+        mess_y = []
+        x_i = 0
+        while x_i < len(start_schritt_ziel): # gehe Variablen durch für aktuellen Parameter
+            ax.clear()
+            ax.grid()
+            for p_fertig in range(p_i): # Ab den zweiten Parameter, gib die Kurven davor sofort aus
+                ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], label=str(para[p_i]) + "V")
+                #   ax.legend(loc="upper left")
+                canvas.draw()
+            var_x.append(start_schritt_ziel[x_i,])
+            mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,], para[p_i]))
+            ax.plot(var_x, mess_y)
+            #   ax.legend(loc="upper left")
+            canvas.draw()
+            master.update()
+            sleep(0.3)
+            x_i += 1
+        messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
+        p_i += 1
 
 
-
-window_height = 680
+window_height = 700
 window_width = 1065
 
 # ##########################################################################
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
-master.geometry("1065x500")
+master.geometry("1065x525")
 master.title("HalbleiterLeitTechnik")
 
 
@@ -529,7 +554,7 @@ Combo_Parameter.current(1)
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
 
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=messung)
-Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop")
+Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop)
 
 # Messung Design
 Frame_Messung.pack(fill='x')
@@ -552,10 +577,12 @@ Button_Start_Messung.grid(column=0, row=4, columnspan=2, padx=10, pady=10)
 Button_Stop_Messung.grid(column=2, row=4, columnspan=2, padx=10, pady=10)
 
 
+
 fig, ax = plt.subplots()
 canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
-
+progressbar = ttk.Progressbar(Frame_Steuerung)
+progressbar.pack(fill='x')
 
 master.mainloop()
