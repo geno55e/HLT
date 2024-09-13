@@ -10,6 +10,9 @@ from time import sleep
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
+from MOSFET import simulate_mosfet_current
+
+
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
@@ -33,6 +36,7 @@ def HM8143_Quelle_remoteOff():
 def HM8143_Quelle_SpannungLinks(spannung):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    print('SU1:' + str(spannung))
     my_instrument.write('SU1:'+str(spannung))
     my_instrument.close()
 
@@ -40,6 +44,7 @@ def HM8143_Quelle_SpannungLinks(spannung):
 def HM8143_Quelle_SpannungRechts(spannung):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    print('SU2:' + str(spannung))
     my_instrument.write('SU2:'+str(spannung))
     my_instrument.close()
 
@@ -248,6 +253,28 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             Combo_Messbereich_Fluke.current(0)
 
 
+def Aktualisiere_Widgets_Parameter(parameter_einteilung):
+    match parameter_einteilung:
+        case "linear" | "quadratisch" | "exponentiell":
+            Label_Eingabe_Parameter.grid_forget()
+            Eingabe_Parameter.grid_forget()
+            Label_Startwert_Parameter.grid(column=1, row=4, padx=5, pady=1)
+            Label_Zielwert_Parameter.grid(column=2, row=4, padx=5, pady=1)
+            Label_Schritte_Parameter.grid(column=3, row=4, padx=5, pady=1)
+            Eingabe_Startwert_Parameter.grid(column=1, row=5, padx=5, pady=1)
+            Eingabe_Zielwert_Parameter.grid(column=2, row=5, padx=5, pady=1)
+            Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
+        case "manuell":
+            Label_Startwert_Parameter.grid_forget()
+            Label_Zielwert_Parameter.grid_forget()
+            Label_Schritte_Parameter.grid_forget()
+            Eingabe_Startwert_Parameter.grid_forget()
+            Eingabe_Zielwert_Parameter.grid_forget()
+            Eingabe_Schritte_Parameter.grid_forget()
+            Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
+            Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
+
+
 def ConvertMessgroesseToSCPI():
     match Combo_Messgroesse_Fluke.get():
         case "Gleichspannung":
@@ -282,7 +309,7 @@ def MessungStop():
     messungStop = True
 
 
-def Fluke_Messe_Wert(v,p):
+def Fluke_Messe_Wert(v, p):
 
     # Messgröße Fluke
     # vdc = ":CONF:VOLT:DC "
@@ -299,18 +326,18 @@ def Fluke_Messe_Wert(v,p):
     # res_nplc = ":res:nplc 1"
 
     # Trigger
-    trig = ";:TRIG:DEL 0"
+    # trig = ";:TRIG:DEL 0"
     # trig = ";:TRIG:SOUR BUS"
 
     # Commands Fluke
     # Aufbau: ...Messgröße+Messbereich+Integrationszeit+Trigger
 
-    messgroesse = ConvertMessgroesseToSCPI()
-    messbereich = ConvertMessbereichToDecimalString()
-    integrationszeit = setIntegrationTime().upper()
+    # messgroesse = ConvertMessgroesseToSCPI()
+    # messbereich = ConvertMessbereichToDecimalString()
+    # integrationszeit = setIntegrationTime().upper()
 
     # print(messgroesse+messbereich+trig+integrationszeit)
-    gemessener_wert = p*v*v
+
     # zum TESTEN auskommentiert
     # rm = pyvisa.ResourceManager()
     # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
@@ -319,20 +346,53 @@ def Fluke_Messe_Wert(v,p):
     # my_instrument.write('*RST;*CLS;syst:local')
     # my_instrument.close()
 
+    gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
+
     return gemessener_wert
 
 
-x_i = 0
-var_x = []
-mess_y = []
-messungStop = False
+def Parameter_bestimmen():
+    match Combo_Parameter_Einteilung.get():
+        case "linear":
+            return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()), num=int(Eingabe_Schritte_Parameter.get()))
+        case "quadratisch":
+            i_min = np.square(int(Eingabe_Startwert_Parameter.get()))
+            i_max = np.square(int(Eingabe_Zielwert_Parameter.get()))
+            step = Eingabe_Schritte_Parameter.get()
+            i_vec = np.linspace(i_min, i_max, num=int(step))
+            para = np.sqrt(i_vec)
+            para = np.round(para, decimals=2)
+            return para
+        case "exponentiell":
+            i_min = np.exp(int(Eingabe_Startwert_Parameter.get()))
+            i_max = np.exp(int(Eingabe_Zielwert_Parameter.get()))
+            step = Eingabe_Schritte_Parameter.get()
+            i_vec = np.linspace(i_min, i_max, num=int(step))
+            para = np.log(i_vec)
+            para = np.round(para, decimals=2)
+            return para
+        case "manuell":
+            return Eingabe_Parameter.get().split(";")
+        case "ohne Parameter":
+            return [1]
 
 
+# Hauptfunktion
 def messung():
+    # HM8143_Quelle_remoteOn()
+    # HM8143_Quelle_AusgangOff()
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
-    start_schritt_ziel = np.arange(start, ziel, schritt)
+    start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
+
+    # match Combo_Variable_Einteilung.get():
+    #     case "linear":
+    #         start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
+    #     case "logarithmisch":
+    #         start_schritt_ziel = np.logspace(start, ziel, num=int((ziel - start) / schritt))
+    #     case _:
+    #         start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
 
     global var_x
     global mess_y
@@ -343,32 +403,48 @@ def messung():
     var_x = []
     mess_y = []
     x_i = 0
-    para = ([1])
+    # para = ([1, 2, 4])
+    # para = Eingabe_Parameter.get().split(";")
+    para = Parameter_bestimmen()
 
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
-    while p_i < len(para):  # gehe Parameter durch
-        var_x = []
-        mess_y = []
-        x_i = 0
-        while x_i < len(start_schritt_ziel): # gehe Variablen durch für aktuellen Parameter
-            ax.clear()
-            ax.grid()
-            for p_fertig in range(p_i): # Ab den zweiten Parameter, gib die Kurven davor sofort aus
-                ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], label=str(para[p_i]) + "V")
-                #   ax.legend(loc="upper left")
+    if len(para) > 0:
+        while p_i < len(para):  # gehe Parameter durch
+            var_x = []
+            mess_y = []
+            x_i = 0
+            while x_i < len(start_schritt_ziel):    # gehe Variablen durch für aktuellen Parameter
+                # match Combo_Variable.get():
+                #     case "Spannung links":
+                #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
+                #         HM8143_Quelle_AusgangOn()
+                #     case "Spannung rechts":
+                #         HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
+                #         HM8143_Quelle_AusgangOn()
+                ax.clear()
+                ax.grid()
+                for p_fertig in range(p_i):     # Ab den zweiten Parameter, gib die Kurven davor sofort aus
+                    ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], '--.')
+                    canvas.draw()
+                var_x.append(start_schritt_ziel[x_i,])
+                mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))
+                ax.plot(var_x, mess_y, '--.')
                 canvas.draw()
-            var_x.append(start_schritt_ziel[x_i,])
-            mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,], para[p_i]))
-            ax.plot(var_x, mess_y)
-            #   ax.legend(loc="upper left")
-            canvas.draw()
-            master.update()
-            sleep(0.3)
-            x_i += 1
-        messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
-        p_i += 1
+                master.update()
+                sleep(0.01)
+                x_i += 1
+            messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
+            p_i += 1
+        # ax.legend([i + "V" for i in para]) # fügt jedem Element in der Liste ein V an für die Legende
+        ax.legend(para)
+        canvas.draw()
 
+
+x_i = 0
+var_x = []
+mess_y = []
+messungStop = False
 
 window_height = 700
 window_width = 1065
@@ -377,7 +453,7 @@ window_width = 1065
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
-master.geometry("1065x525")
+master.geometry("1065x560")
 master.title("HalbleiterLeitTechnik")
 
 
@@ -451,7 +527,6 @@ Combo_Wellenform_HM8150_Freq = ttk.Combobox(
 )
 Combo_Wellenform_HM8150_Freq.current(0)
 
-
 Combo_Wellenform_HM8150_Freq.bind("<<ComboboxSelected>>", (lambda event: HM8150_Freq_Wellenform(Combo_Wellenform_HM8150_Freq.get())))
 
 Eingabe_Amplitude_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
@@ -520,6 +595,7 @@ Combo_Messbereich_Fluke.grid(column=1, row=1, padx=5, pady=1)
 
 # Messung
 Frame_Messung = ttk.LabelFrame(Frame_Steuerung, text="Messung")
+
 Label_Variable = tk.Label(Frame_Messung, text="Variable")
 Label_Startwert = tk.Label(Frame_Messung, text="Startwert")
 Label_Schrittweite = tk.Label(Frame_Messung, text="Schrittweite")
@@ -536,12 +612,12 @@ Combo_Variable.current(0)
 Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=7)
 Eingabe_Startwert_Variable.insert(0, "0")
 Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Schrittweite_Variable.insert(0, "0.03")
+Eingabe_Schrittweite_Variable.insert(0, "0.2")
 Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Zielwert_Variable.insert(0, "1")
+Eingabe_Zielwert_Variable.insert(0, "2")
 
 Label_Auswahl_Parameter = tk.Label(Frame_Messung, text="Parameter Auswahl")
-Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Eingabe")
+Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Eingabe (mit ; getrennt)")
 
 Combo_Parameter = ttk.Combobox(
     Frame_Messung,
@@ -551,6 +627,29 @@ Combo_Parameter = ttk.Combobox(
 )
 Combo_Parameter.current(1)
 
+Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
+
+Combo_Parameter_Einteilung = ttk.Combobox(
+    Frame_Messung,
+    state="readonly",
+    values=["linear", "quadratisch", "exponentiell", "manuell", "ohne Parameter"],
+    width=16
+)
+Combo_Parameter_Einteilung.current(1)
+
+Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter(Combo_Parameter_Einteilung.get())))
+
+Label_Startwert_Parameter = tk.Label(Frame_Messung, text="Startwert")
+Label_Zielwert_Parameter = tk.Label(Frame_Messung, text="Zielwert")
+Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
+
+Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Startwert_Parameter.insert(0, "0")
+Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Zielwert_Parameter.insert(0, "8")
+Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Schritte_Parameter.insert(0, "1")
+
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
 
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=messung)
@@ -558,31 +657,51 @@ Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop
 
 # Messung Design
 Frame_Messung.pack(fill='x')
+
 Label_Variable.grid(column=0, row=0, sticky="W", padx=5, pady=1)
 Label_Startwert.grid(column=1, row=0, padx=5, pady=1)
 Label_Schrittweite.grid(column=2, row=0, padx=5, pady=1)
 Label_Zielwert.grid(column=3, row=0, padx=5, pady=1)
+
 Combo_Variable.grid(column=0, row=1, sticky="W", padx=5, pady=1)
 Eingabe_Startwert_Variable.grid(column=1, row=1, padx=5, pady=1)
 Eingabe_Schrittweite_Variable.grid(column=2, row=1, padx=5, pady=1)
 Eingabe_Zielwert_Variable.grid(column=3, row=1, padx=5, pady=1)
 
 Label_Auswahl_Parameter.grid(column=0, row=2, sticky="W", padx=5, pady=1)
-Label_Eingabe_Parameter.grid(column=1, row=2, padx=5, pady=1)
+
 Combo_Parameter.grid(column=0, row=3, sticky="W", padx=5, pady=1)
-Eingabe_Parameter.grid(column=1, row=3, sticky="W", columnspan=3, padx=5, pady=1)
 
+Label_Parameter_Einteilung.grid(column=0, row=4, sticky="W", padx=5, pady=1)
+Label_Startwert_Parameter.grid(column=1, row=4, padx=5, pady=1)
+Label_Zielwert_Parameter.grid(column=2, row=4, padx=5, pady=1)
+Label_Schritte_Parameter.grid(column=3, row=4, padx=5, pady=1)
 
-Button_Start_Messung.grid(column=0, row=4, columnspan=2, padx=10, pady=10)
-Button_Stop_Messung.grid(column=2, row=4, columnspan=2, padx=10, pady=10)
+Combo_Parameter_Einteilung.grid(column=0, row=5, sticky="W", padx=5, pady=1)
+Eingabe_Startwert_Parameter.grid(column=1, row=5, padx=5, pady=1)
+Eingabe_Zielwert_Parameter.grid(column=2, row=5, padx=5, pady=1)
+Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 
+Button_Start_Messung.grid(column=0, row=6, columnspan=2, padx=10, pady=10)
+Button_Stop_Messung.grid(column=2, row=6, columnspan=2, padx=10, pady=10)
 
 
 fig, ax = plt.subplots()
+ax.grid()
 canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x')
+
+
+# Zum ordentlichen Beenden des Programms, wenn man fenster schließt
+def closing_cbk():
+    # Shutdown procedure
+    master.quit()
+    master.destroy()
+
+
+master.protocol("WM_DELETE_WINDOW", closing_cbk)
 
 master.mainloop()
