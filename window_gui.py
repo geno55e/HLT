@@ -1,5 +1,5 @@
 import random
-
+from tkinter import filedialog
 import matplotlib.pyplot as plt
 import pyvisa
 import tkinter as tk
@@ -346,7 +346,7 @@ def Fluke_Messe_Wert(v, p):
     # rm = pyvisa.ResourceManager()
     # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
     # my_instrument.write('*RST;*CLS;CONF:VOLT:DC '+str(messbereich)+';:VOLT:DC:NPLC 1;:TRIG:SOUR BUS')
-    # gemessener_wert = my_instrument.query(':INIT;*TRG;FETCH?')
+    # gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?')) # Wandle nach float und speichere gemessenen Wert
     # my_instrument.write('*RST;*CLS;syst:local')
     # my_instrument.close()
 
@@ -381,7 +381,7 @@ def Parameter_bestimmen():
             return [1]
     
     
-def create_table(headers, var):
+def Create_table(headers, var):
     global Tabelle
 
     # Konfigurieren der ersten Spalte "#0" und setzen der Überschrift auf "Variable"
@@ -406,10 +406,22 @@ def Wert_in_Tabelle_einfuegen(row_id, column, value):
     global Tabelle
     # Hier wird der Wert in eine spezifische Zelle gesetzt
     Tabelle.set(row_id, column=column, value=value)
-    
+
+
+def Save_Messdaten_to_File():
+    global messdaten
+    global headers
+    messdaten_transp = np.transpose(messdaten)
+    # Datei speichern Dialog öffnen
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    if file_path:
+        # Datei öffnen und Matrix speichern
+        np.savetxt(file_path, messdaten_transp, fmt='%s', delimiter=' ', header=str(headers), comments='')
+        print(f"Numpy-Matrix wurde in {file_path} gespeichert.")
+
 
 # Hauptfunktion
-def messung():
+def Messung():
     # HM8143_Quelle_remoteOn()
     # HM8143_Quelle_AusgangOff()
     start = float(Eingabe_Startwert_Variable.get())
@@ -429,6 +441,8 @@ def messung():
     global mess_y
     global x_i
     global messungStop
+    global messdaten
+    global headers
 
     messungStop = False
     var_x = []
@@ -446,43 +460,48 @@ def messung():
         case _:
             headers = [str(i) + " (Parameter)" for i in para]
 
-    create_table(headers, list(start_schritt_ziel))
+    Create_table(headers, list(start_schritt_ziel))
 
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
-    if len(para) > 0:
-        while p_i < len(para):  # gehe Parameter durch
-            var_x = []
-            mess_y = []
-            x_i = 0
-            while x_i < len(start_schritt_ziel):    # gehe Variablen durch für aktuellen Parameter
-                # match Combo_Variable.get():
-                #     case "Spannung links":
-                #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
-                #         HM8143_Quelle_AusgangOn()
-                #     case "Spannung rechts":
-                #         HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
-                #         HM8143_Quelle_AusgangOn()
-                ax.clear()
-                ax.grid()
-                for p_fertig in range(p_i):     # Ab den zweiten Parameter, gib die Kurven davor sofort aus
-                    ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], '--.')
-                    canvas.draw()
-                var_x.append(start_schritt_ziel[x_i,])
-                mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))
-                Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))  # Tabelle
-                ax.plot(var_x, mess_y, '--.')
+
+    while p_i < len(para):  # gehe Parameter durch
+        var_x = []
+        mess_y = []
+        x_i = 0
+        while x_i < len(start_schritt_ziel):    # gehe Variablen durch für aktuellen Parameter
+            # match Combo_Variable.get():
+            #     case "Spannung links":
+            #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
+            #         HM8143_Quelle_AusgangOn()
+            #     case "Spannung rechts":
+            #         HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
+            #         HM8143_Quelle_AusgangOn()
+            ax.clear()
+            ax.grid()
+            for p_fertig in range(p_i):     # Ab den zweiten Parameter, gib die Kurven davor sofort aus
+                ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], '--.')
                 canvas.draw()
-                master.update()
-                sleep(0.01)
-                x_i += 1
-            messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
-            p_i += 1
-        ax.legend(headers)
-        # ax.legend(para)
-        canvas.draw()
+            var_x.append(start_schritt_ziel[x_i,])
+            wert_gemessen = Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i]))
+            mess_y.append(wert_gemessen)
+            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))  # Tabelle
+            ax.plot(var_x, mess_y, '--.')
+            ax.set_xlabel(Combo_Variable.get())
+            ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
+            canvas.draw()
+            master.update()
+            sleep(0.01)
+            x_i += 1
+        messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
+        p_i += 1
+    ax.legend(headers)
+    canvas.draw()
+    headers = np.append(['Variable'], headers)
 
 
+headers = 0
+messdaten = 0
 x_i = 0
 var_x = []
 mess_y = []
@@ -495,7 +514,7 @@ fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
 
-# ##########################################################################
+# ###############################################################################################################################################
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
@@ -699,8 +718,9 @@ Eingabe_Schritte_Parameter.insert(0, "1")
 
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
 
-Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=messung)
+Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung)
 Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop)
+Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File)
 
 # Messung Design
 Frame_Messung.pack(fill='x')
@@ -729,8 +749,9 @@ Eingabe_Startwert_Parameter.grid(column=1, row=5, padx=5, pady=1)
 Eingabe_Zielwert_Parameter.grid(column=2, row=5, padx=5, pady=1)
 Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 
-Button_Start_Messung.grid(column=0, row=6, columnspan=2, padx=10, pady=10)
-Button_Stop_Messung.grid(column=2, row=6, columnspan=2, padx=10, pady=10)
+Button_Start_Messung.grid(column=0, row=6, padx=10, pady=10)
+Button_Messdaten_Speichern.grid(column=1, row=6, padx=10, pady=10)
+Button_Stop_Messung.grid(column=2, row=6, padx=10, pady=10)
 
 
 fig, ax = plt.subplots()
