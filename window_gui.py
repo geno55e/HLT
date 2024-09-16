@@ -247,6 +247,56 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(0)
 
+def Widgets_sperren():
+    Eingabe_Spannung_links_HM8143_Quelle.configure(state='disabled')
+    Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='disabled')
+    Eingabe_Strom_links_HM8143_Quelle.configure(state='disabled')
+    Button_on_off_HM8143_Quelle.configure(state='disabled')
+    Eingabe_Strom_rechts_HM8143_Quelle.configure(state='disabled')
+    Combo_Wellenform_HM8150_Freq.configure(state='disabled')
+    Eingabe_Amplitude_HM8150_Freq.configure(state='disabled')
+    Eingabe_Frequenz_HM8150_Freq.configure(state='disabled')
+    Eingabe_Offset_HM8150_Freq.configure(state='disabled')
+    Button_Output_on_off_HM8150_Freq.configure(state='disabled')
+    Button_Offset_on_off_HM8150_Freq.configure(state='disabled')
+    Combo_Messgroesse_Fluke.configure(state='disabled')
+    Combo_Messbereich_Fluke.configure(state='disabled')
+    Combo_Variable.configure(state='disabled')
+    Eingabe_Startwert_Variable.configure(state='disabled')
+    Eingabe_Schrittweite_Variable.configure(state='disabled')
+    Eingabe_Zielwert_Variable.configure(state='disabled')
+    Combo_Parameter.configure(state='disabled')
+    Combo_Parameter_Einteilung.configure(state='disabled')
+    Eingabe_Startwert_Parameter.configure(state='disabled')
+    Eingabe_Zielwert_Parameter.configure(state='disabled')
+    Eingabe_Schritte_Parameter.configure(state='disabled')
+    Button_Messdaten_Speichern.configure(state='disabled')
+
+
+def Widgets_entsperren():
+    Eingabe_Spannung_links_HM8143_Quelle.configure(state='normal')
+    Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='normal')
+    Eingabe_Strom_links_HM8143_Quelle.configure(state='normal')
+    Button_on_off_HM8143_Quelle.configure(state='normal')
+    Eingabe_Strom_rechts_HM8143_Quelle.configure(state='normal')
+    Combo_Wellenform_HM8150_Freq.configure(state='normal')
+    Eingabe_Amplitude_HM8150_Freq.configure(state='normal')
+    Eingabe_Frequenz_HM8150_Freq.configure(state='normal')
+    Eingabe_Offset_HM8150_Freq.configure(state='normal')
+    Button_Output_on_off_HM8150_Freq.configure(state='normal')
+    Button_Offset_on_off_HM8150_Freq.configure(state='normal')
+    Combo_Messgroesse_Fluke.configure(state='normal')
+    Combo_Messbereich_Fluke.configure(state='normal')
+    Combo_Variable.configure(state='normal')
+    Eingabe_Startwert_Variable.configure(state='normal')
+    Eingabe_Schrittweite_Variable.configure(state='normal')
+    Eingabe_Zielwert_Variable.configure(state='normal')
+    Combo_Parameter.configure(state='normal')
+    Combo_Parameter_Einteilung.configure(state='normal')
+    Eingabe_Startwert_Parameter.configure(state='normal')
+    Eingabe_Zielwert_Parameter.configure(state='normal')
+    Eingabe_Schritte_Parameter.configure(state='normal')
+    Button_Messdaten_Speichern.configure(state='normal')
 
 def Aktualisiere_Widgets_Parameter(parameter_einteilung):
     match parameter_einteilung:
@@ -422,6 +472,7 @@ def Save_Messdaten_to_File():
 
 # Hauptfunktion
 def Messung():
+    Widgets_sperren()
     # HM8143_Quelle_remoteOn()
     # HM8143_Quelle_AusgangOff()
     start = float(Eingabe_Startwert_Variable.get())
@@ -498,7 +549,7 @@ def Messung():
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
-
+    Widgets_entsperren()
 
 headers = 0
 messdaten = 0
