@@ -13,11 +13,6 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from MOSFET import simulate_mosfet_current
 
 
-fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
-fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
-fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
-
-
 # HM8143 Spannungsquelle
 def HM8143_Quelle_remoteOn():
     rm = pyvisa.ResourceManager()
@@ -273,6 +268,15 @@ def Aktualisiere_Widgets_Parameter(parameter_einteilung):
             Eingabe_Schritte_Parameter.grid_forget()
             Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
             Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
+        case "ohne Parameter":
+            Label_Startwert_Parameter.grid_forget()
+            Label_Zielwert_Parameter.grid_forget()
+            Label_Schritte_Parameter.grid_forget()
+            Eingabe_Startwert_Parameter.grid_forget()
+            Eingabe_Zielwert_Parameter.grid_forget()
+            Eingabe_Schritte_Parameter.grid_forget()
+            Label_Eingabe_Parameter.grid_forget()
+            Eingabe_Parameter.grid_forget()
 
 
 def ConvertMessgroesseToSCPI():
@@ -375,7 +379,34 @@ def Parameter_bestimmen():
             return Eingabe_Parameter.get().split(";")
         case "ohne Parameter":
             return [1]
+    
+    
+def create_table(headers, var):
+    global Tabelle
 
+    # Konfigurieren der ersten Spalte "#0" und setzen der Überschrift auf "Variable"
+    Tabelle.column("#0", anchor=tk.CENTER, width=150, stretch=tk.NO)  # Zentrierte Ausrichtung
+    Tabelle.heading("#0", text="Variable", anchor=tk.CENTER)  # Überschrift ebenfalls zentriert
+
+    # Konfigurieren der zusätzlichen Spalten aus der headers-Liste
+    Tabelle['columns'] = headers
+    for header in headers:
+        Tabelle.column(header, anchor=tk.CENTER, width=100)  # Zentrierte Ausrichtung für zusätzliche Spalten
+        Tabelle.heading(header, text=header, anchor=tk.CENTER)  # Überschrift
+
+    # Beispiel-Daten (in diesem Fall Zufallsdaten für zusätzliche Spalten)
+    for i, variable in enumerate(var):
+        Tabelle.insert(parent='', index='end', iid=i, text=f"{variable:.2f}", values=())  # Leere values-Liste
+
+    # Tabelle anzeigen
+    Tabelle.pack()
+    
+
+def Wert_in_Tabelle_einfuegen(row_id, column, value):
+    global Tabelle
+    # Hier wird der Wert in eine spezifische Zelle gesetzt
+    Tabelle.set(row_id, column=column, value=value)
+    
 
 # Hauptfunktion
 def messung():
@@ -406,6 +437,16 @@ def messung():
     # para = ([1, 2, 4])
     # para = Eingabe_Parameter.get().split(";")
     para = Parameter_bestimmen()
+    
+    match Combo_Parameter.get():
+        case "Spannung links" | "Spannung rechts":
+            headers = [str(i) + "V (Parameter)" for i in para]
+        case "Strom links" | "Strom rechts":
+            headers = [str(i) + "V (Parameter)" for i in para]
+        case _:
+            headers = [str(i) + " (Parameter)" for i in para]
+
+    create_table(headers, list(start_schritt_ziel))
 
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
@@ -429,6 +470,7 @@ def messung():
                     canvas.draw()
                 var_x.append(start_schritt_ziel[x_i,])
                 mess_y.append(Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))
+                Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))  # Tabelle
                 ax.plot(var_x, mess_y, '--.')
                 canvas.draw()
                 master.update()
@@ -436,8 +478,8 @@ def messung():
                 x_i += 1
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
-        # ax.legend([i + "V" for i in para]) # fügt jedem Element in der Liste ein V an für die Legende
-        ax.legend(para)
+        ax.legend(headers)
+        # ax.legend(para)
         canvas.draw()
 
 
@@ -449,11 +491,15 @@ messungStop = False
 window_height = 700
 window_width = 1065
 
+fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
+fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
+fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
+
 # ##########################################################################
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
-master.geometry("1065x560")
+master.geometry("2065x560")
 master.title("HalbleiterLeitTechnik")
 
 
@@ -463,6 +509,7 @@ Frame_Plot = ttk.Frame(master)
 Frame_Steuerung.place(x=0, y=0, relwidth=0.35, relheight=1)
 Frame_Plot.place(relx=0.35, y=0, relwidth=0.65, relheight=1)
 
+Tabelle = ttk.Treeview(Frame_Plot)
 
 # Lokal
 Frame_Lokal = ttk.Frame(Frame_Steuerung)
@@ -644,7 +691,7 @@ Label_Zielwert_Parameter = tk.Label(Frame_Messung, text="Zielwert")
 Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
 
 Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=7)
-Eingabe_Startwert_Parameter.insert(0, "0")
+Eingabe_Startwert_Parameter.insert(0, "1")
 Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=7)
 Eingabe_Zielwert_Parameter.insert(0, "8")
 Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=7)
@@ -692,7 +739,7 @@ canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
-progressbar.pack(fill='x')
+progressbar.pack(fill='both', expand = True)
 
 
 # Zum ordentlichen Beenden des Programms, wenn man fenster schließt
