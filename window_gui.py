@@ -497,7 +497,7 @@ def Messung():
         p_i += 1
     ax.legend(headers)
     canvas.draw()
-    headers = np.append(['Variable'], headers)
+    headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
 
 
 headers = 0
