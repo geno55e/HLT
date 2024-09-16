@@ -516,11 +516,11 @@ def Messung():
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
 
-    while p_i < len(para):  # gehe Parameter durch
+    while (p_i < len(para)) and (messungStop != True):  # gehe Parameter durch
         var_x = []
         mess_y = []
         x_i = 0
-        while x_i < len(start_schritt_ziel):    # gehe Variablen durch für aktuellen Parameter
+        while x_i < len(start_schritt_ziel) and (messungStop != True):    # gehe Variablen durch für aktuellen Parameter
             # match Combo_Variable.get():
             #     case "Spannung links":
             #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
@@ -544,13 +544,16 @@ def Messung():
             master.update()
             sleep(0.01)
             x_i += 1
-        messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
-        p_i += 1
+        if messungStop != True:
+            messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
+            p_i += 1
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     Widgets_entsperren()
 
+
+# -----------------------------------------------------------------------------------------------------------------------------------------------
 headers = 0
 messdaten = 0
 x_i = 0
