@@ -516,9 +516,12 @@ def Create_table(headers, var):
     for i, variable in enumerate(var):
         Tabelle.insert(parent='', index='end', iid=i, text=f"{variable:.2f}", values=())  # Leere values-Liste
 
-    # Tabelle anzeigen
-    Tabelle.pack()
-    
+    # Tabelle und Scrollbar anzeigen
+    Tabelle.pack(fill='both', expand=True, padx=10, pady=10)
+    h_scrollbar = ttk.Scrollbar(Frame_Tabelle, orient=tk.HORIZONTAL, command=Tabelle.xview)
+    h_scrollbar.pack(side='bottom', fill='x')
+    Tabelle.configure(xscrollcommand=h_scrollbar.set)
+
 
 def Wert_in_Tabelle_einfuegen(row_id, column, value):
     global Tabelle
@@ -572,7 +575,7 @@ def Messung():
     # para = Eingabe_Parameter.get().split(";")
     para = Parameter_bestimmen()
 
-    progressbar['maximum'] = int((ziel - start) / schritt) * len(para)
+    progressbar['maximum'] = int((ziel - start) / schritt) * len(para)  # Lege das Maximum von der Progressbar fest
 
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
@@ -616,7 +619,7 @@ def Messung():
             sleep(0.01)
             x_i += 1
             progress += 1
-            progressbar['value'] = progress
+            progressbar['value'] = progress  # Progress um eins erweitern
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
@@ -646,16 +649,18 @@ fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k 
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
-master.geometry("2065x560")
+master.geometry("1500x560")
 master.title("HalbleiterLeitTechnik")
 
 Frame_Steuerung = ttk.Frame(master)
-Frame_Plot = ttk.Frame(master)
+Frame_Plot = ttk.Frame(master, relief='groove')
+Frame_Tabelle = ttk.Frame(master)
 
-Frame_Steuerung.place(x=0, y=0, relwidth=0.35, relheight=1)
-Frame_Plot.place(relx=0.35, y=0, relwidth=0.65, relheight=1)
+Frame_Steuerung.place(x=0, y=0, relwidth=0.23, relheight=1)
+Frame_Plot.place(relx=0.23, y=0, relwidth=0.45, relheight=1)
+Frame_Tabelle.place(relx=0.68, y=0, relwidth=0.32, relheight=1)
 
-Tabelle = ttk.Treeview(Frame_Plot)
+Tabelle = ttk.Treeview(Frame_Tabelle, selectmode='browse')
 
 style = ttk.Style()
 # style.configure('My.TButton', background='lightblue', foreground='black')
@@ -804,7 +809,7 @@ Combo_Variable = ttk.Combobox(
     Frame_Messung,
     state="readonly",
     values=["Spannung links", "Spannung rechts"],
-    width=16
+    width=15
 )
 Combo_Variable.current(0)
 
@@ -822,7 +827,7 @@ Combo_Parameter = ttk.Combobox(
     Frame_Messung,
     state="readonly",
     values=["Spannung links", "Spannung rechts", "Strom links", "Strom rechts"],
-    width=16
+    width=15
 )
 Combo_Parameter.current(1)
 
@@ -832,7 +837,7 @@ Combo_Parameter_Einteilung = ttk.Combobox(
     Frame_Messung,
     state="readonly",
     values=["linear", "quadratisch", "exponentiell", "manuell", "ohne Parameter"],
-    width=16
+    width=15
 )
 Combo_Parameter_Einteilung.current(1)
 
@@ -851,9 +856,10 @@ Eingabe_Schritte_Parameter.insert(0, "1")
 
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
 
-Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung)
-Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop)
-Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File)
+Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung, width=6)
+Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File, width=9)
+Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop, width=6)
+
 
 # Messung Design
 Frame_Messung.pack(fill='x')
@@ -882,14 +888,15 @@ Eingabe_Startwert_Parameter.grid(column=1, row=5, padx=5, pady=1)
 Eingabe_Zielwert_Parameter.grid(column=2, row=5, padx=5, pady=1)
 Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 
-Button_Start_Messung.grid(column=0, row=6, padx=10, pady=10)
-Button_Messdaten_Speichern.grid(column=1, row=6, padx=10, pady=10)
-Button_Stop_Messung.grid(column=2, row=6, padx=10, pady=10)
+Button_Start_Messung.grid(column=0, row=6, padx=5, pady=3)
+Button_Messdaten_Speichern.grid(column=1, row=6, padx=5, pady=3)
+Button_Stop_Messung.grid(column=2, row=6, padx=5, pady=3)
+
 
 fig, ax = plt.subplots()
 ax.grid()
 canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
-canvas.get_tk_widget().pack(side="left")
+canvas.get_tk_widget().pack(fill='both', expand=True)
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
