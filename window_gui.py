@@ -1,13 +1,10 @@
-import random
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 import pyvisa
 import tkinter as tk
 import numpy as np
 from tkinter import ttk
-from plot import plot
 from time import sleep
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 from MOSFET import simulate_mosfet_current
@@ -247,6 +244,7 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(0)
 
+
 def Widgets_sperren():
     Eingabe_Spannung_links_HM8143_Quelle.configure(state='disabled')
     Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='disabled')
@@ -271,6 +269,7 @@ def Widgets_sperren():
     Eingabe_Zielwert_Parameter.configure(state='disabled')
     Eingabe_Schritte_Parameter.configure(state='disabled')
     Button_Messdaten_Speichern.configure(state='disabled')
+    Button_Geraete_lokal.configure(state='disabled')
 
 
 def Widgets_entsperren():
@@ -297,6 +296,8 @@ def Widgets_entsperren():
     Eingabe_Zielwert_Parameter.configure(state='normal')
     Eingabe_Schritte_Parameter.configure(state='normal')
     Button_Messdaten_Speichern.configure(state='normal')
+    Button_Geraete_lokal.configure(state='normal')
+
 
 def Aktualisiere_Widgets_Parameter(parameter_einteilung):
     match parameter_einteilung:
@@ -405,6 +406,68 @@ def Fluke_Messe_Wert(v, p):
     return gemessener_wert
 
 
+def Geraete_lokal_bedienen():
+    global geraete_lokal_on
+    if geraete_lokal_on:
+        # Wechsle zurück zu remote
+        Eingabe_Spannung_links_HM8143_Quelle.configure(state='normal')
+        Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='normal')
+        Eingabe_Strom_links_HM8143_Quelle.configure(state='normal')
+        Button_on_off_HM8143_Quelle.configure(state='normal')
+        Eingabe_Strom_rechts_HM8143_Quelle.configure(state='normal')
+        Combo_Wellenform_HM8150_Freq.configure(state='normal')
+        Eingabe_Amplitude_HM8150_Freq.configure(state='normal')
+        Eingabe_Frequenz_HM8150_Freq.configure(state='normal')
+        Eingabe_Offset_HM8150_Freq.configure(state='normal')
+        Button_Output_on_off_HM8150_Freq.configure(state='normal')
+        Button_Offset_on_off_HM8150_Freq.configure(state='normal')
+        Combo_Messgroesse_Fluke.configure(state='normal')
+        Combo_Messbereich_Fluke.configure(state='normal')
+        Combo_Variable.configure(state='normal')
+        Eingabe_Startwert_Variable.configure(state='normal')
+        Eingabe_Schrittweite_Variable.configure(state='normal')
+        Eingabe_Zielwert_Variable.configure(state='normal')
+        Combo_Parameter.configure(state='normal')
+        Combo_Parameter_Einteilung.configure(state='normal')
+        Eingabe_Startwert_Parameter.configure(state='normal')
+        Eingabe_Zielwert_Parameter.configure(state='normal')
+        Eingabe_Schritte_Parameter.configure(state='normal')
+        Button_Messdaten_Speichern.configure(state='normal')
+        Button_Start_Messung.configure(state='normal')
+        Button_Stop_Messung.configure(state='normal')
+        style.configure('My.TButton', foreground='black')
+    else:
+        # Wechsle zu lokal
+        Eingabe_Spannung_links_HM8143_Quelle.configure(state='disabled')
+        Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='disabled')
+        Eingabe_Strom_links_HM8143_Quelle.configure(state='disabled')
+        Button_on_off_HM8143_Quelle.configure(state='disabled')
+        Eingabe_Strom_rechts_HM8143_Quelle.configure(state='disabled')
+        Combo_Wellenform_HM8150_Freq.configure(state='disabled')
+        Eingabe_Amplitude_HM8150_Freq.configure(state='disabled')
+        Eingabe_Frequenz_HM8150_Freq.configure(state='disabled')
+        Eingabe_Offset_HM8150_Freq.configure(state='disabled')
+        Button_Output_on_off_HM8150_Freq.configure(state='disabled')
+        Button_Offset_on_off_HM8150_Freq.configure(state='disabled')
+        Combo_Messgroesse_Fluke.configure(state='disabled')
+        Combo_Messbereich_Fluke.configure(state='disabled')
+        Combo_Variable.configure(state='disabled')
+        Eingabe_Startwert_Variable.configure(state='disabled')
+        Eingabe_Schrittweite_Variable.configure(state='disabled')
+        Eingabe_Zielwert_Variable.configure(state='disabled')
+        Combo_Parameter.configure(state='disabled')
+        Combo_Parameter_Einteilung.configure(state='disabled')
+        Eingabe_Startwert_Parameter.configure(state='disabled')
+        Eingabe_Zielwert_Parameter.configure(state='disabled')
+        Eingabe_Schritte_Parameter.configure(state='disabled')
+        Button_Messdaten_Speichern.configure(state='disabled')
+        Button_Start_Messung.configure(state='disabled')
+        Button_Stop_Messung.configure(state='disabled')
+        style.configure('My.TButton', foreground='green')
+    # Zustand umschalten
+    geraete_lokal_on = not geraete_lokal_on
+
+
 def Parameter_bestimmen():
     match Combo_Parameter_Einteilung.get():
         case "linear":
@@ -433,6 +496,11 @@ def Parameter_bestimmen():
     
 def Create_table(headers, var):
     global Tabelle
+
+    Tabelle.pack_forget()   # Tabelle vom Fenster löschen (wenn man mehrere Messungen nacheinander durchführt)
+
+    for i in Tabelle.get_children():    # Daten in Tabelle löschen damit bei erneuter Messung Tabelle leer ist
+        Tabelle.delete(i)
 
     # Konfigurieren der ersten Spalte "#0" und setzen der Überschrift auf "Variable"
     Tabelle.column("#0", anchor=tk.CENTER, width=150, stretch=tk.NO)  # Zentrierte Ausrichtung
@@ -516,11 +584,11 @@ def Messung():
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
 
-    while (p_i < len(para)) and (messungStop != True):  # gehe Parameter durch
+    while (p_i < len(para)) and (not messungStop):  # gehe Parameter durch
         var_x = []
         mess_y = []
         x_i = 0
-        while x_i < len(start_schritt_ziel) and (messungStop != True):    # gehe Variablen durch für aktuellen Parameter
+        while x_i < len(start_schritt_ziel) and (not messungStop):    # gehe Variablen durch für aktuellen Parameter
             # match Combo_Variable.get():
             #     case "Spannung links":
             #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
@@ -544,7 +612,7 @@ def Messung():
             master.update()
             sleep(0.01)
             x_i += 1
-        if messungStop != True:
+        if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
     ax.legend(headers)
@@ -560,6 +628,7 @@ x_i = 0
 var_x = []
 mess_y = []
 messungStop = False
+geraete_lokal_on = False
 
 window_height = 700
 window_width = 1065
@@ -584,9 +653,12 @@ Frame_Plot.place(relx=0.35, y=0, relwidth=0.65, relheight=1)
 
 Tabelle = ttk.Treeview(Frame_Plot)
 
+style = ttk.Style()
+# style.configure('My.TButton', background='lightblue', foreground='black')
+
 # Lokal
 Frame_Lokal = ttk.Frame(Frame_Steuerung)
-Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen")
+Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen", style='My.TButton', command=Geraete_lokal_bedienen)
 
 # Lokal Design
 Frame_Lokal.pack(fill='x')
@@ -600,10 +672,10 @@ Label_Spannung_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spannu
 Label_Spannung_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spannung rechts")
 
 Eingabe_Spannung_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Spannung_links_HM8143_Quelle.insert(0, "0,095")
+Eingabe_Spannung_links_HM8143_Quelle.insert(0, "0.5")
 Eingabe_Spannung_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())))
 Eingabe_Spannung_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Spannung_rechts_HM8143_Quelle.insert(0, "0")
+Eingabe_Spannung_rechts_HM8143_Quelle.insert(0, "0.5")
 Eingabe_Spannung_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())))
 
 Label_Strom_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom links")
@@ -807,17 +879,16 @@ Button_Start_Messung.grid(column=0, row=6, padx=10, pady=10)
 Button_Messdaten_Speichern.grid(column=1, row=6, padx=10, pady=10)
 Button_Stop_Messung.grid(column=2, row=6, padx=10, pady=10)
 
-
 fig, ax = plt.subplots()
 ax.grid()
 canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
-progressbar.pack(fill='both', expand = True)
+progressbar.pack(fill='both', expand=True)
 
 
-# Zum ordentlichen Beenden des Programms, wenn man fenster schließt
+# Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
 def closing_cbk():
     # Shutdown procedure
     master.quit()
