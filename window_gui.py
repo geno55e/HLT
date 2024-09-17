@@ -548,6 +548,7 @@ def Messung():
     ziel = float(Eingabe_Zielwert_Variable.get())
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
 
+
     # match Combo_Variable_Einteilung.get():
     #     case "linear":
     #         start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
@@ -570,7 +571,9 @@ def Messung():
     # para = ([1, 2, 4])
     # para = Eingabe_Parameter.get().split(";")
     para = Parameter_bestimmen()
-    
+
+    progressbar['maximum'] = int((ziel - start) / schritt) * len(para)
+
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
             headers = [str(i) + "V (Parameter)" for i in para]
@@ -583,7 +586,7 @@ def Messung():
 
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
-
+    progress = 0
     while (p_i < len(para)) and (not messungStop):  # gehe Parameter durch
         var_x = []
         mess_y = []
@@ -612,6 +615,8 @@ def Messung():
             master.update()
             sleep(0.01)
             x_i += 1
+            progress += 1
+            progressbar['value'] = progress
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
@@ -643,7 +648,6 @@ fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k 
 master = tk.Tk()
 master.geometry("2065x560")
 master.title("HalbleiterLeitTechnik")
-
 
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master)
@@ -743,12 +747,15 @@ Label_Wellenform_HM8150_Freq.grid(column=0, row=0, sticky="W", padx=5, pady=1)
 Label_Amplitude_HM8150_Freq.grid(column=1, row=0, padx=5, pady=1)
 Label_Frequenz_HM8150_Freq.grid(column=2, row=0, padx=5, pady=1)
 Label_Offset_HM8150_Freq.grid(column=3, row=0, padx=5, pady=1)
+
 Combo_Wellenform_HM8150_Freq.grid(column=0, row=1, sticky="W", padx=5, pady=1)
 Eingabe_Amplitude_HM8150_Freq.grid(column=1, row=1, padx=5, pady=1)
 Eingabe_Frequenz_HM8150_Freq.grid(column=2, row=1, padx=5, pady=1)
 Eingabe_Offset_HM8150_Freq.grid(column=3, row=1, padx=5, pady=1)
+
 Label_Output_Button_HM8150_Freq.grid(column=0, row=2, columnspan=2, padx=5, pady=1)
 Label_Offset_Button_HM8150_Freq.grid(column=2, row=2, columnspan=2, padx=5, pady=1)
+
 Button_Output_on_off_HM8150_Freq.grid(column=0, row=3, columnspan=2, padx=5, pady=1)
 Button_Offset_on_off_HM8150_Freq.grid(column=2, row=3, columnspan=2, padx=5, pady=1)
 
@@ -801,11 +808,11 @@ Combo_Variable = ttk.Combobox(
 )
 Combo_Variable.current(0)
 
-Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Variable.insert(0, "0")
-Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schrittweite_Variable.insert(0, "0.2")
-Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Variable.insert(0, "2")
 
 Label_Auswahl_Parameter = tk.Label(Frame_Messung, text="Parameter Auswahl")
@@ -835,11 +842,11 @@ Label_Startwert_Parameter = tk.Label(Frame_Messung, text="Startwert")
 Label_Zielwert_Parameter = tk.Label(Frame_Messung, text="Zielwert")
 Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
 
-Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Parameter.insert(0, "1")
-Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Parameter.insert(0, "8")
-Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=7)
+Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schritte_Parameter.insert(0, "1")
 
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
@@ -885,7 +892,7 @@ canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(side="left")
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
-progressbar.pack(fill='both', expand=True)
+progressbar.pack(fill='x', expand=True)
 
 
 # Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
