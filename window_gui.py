@@ -78,6 +78,35 @@ def HM8143_Quelle_Toggle_Ausgang():
         Button_on_off_HM8143_Quelle["text"] = "Off"
 
 
+def HM8143_Quelle_ZeigeStromLinks():
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    strom_links = my_instrument.query('MI1')
+    my_instrument.close()
+    return strom_links
+
+
+def HM8143_Quelle_ZeigeStromRechts():
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    strom_rechts = my_instrument.query('MI2')
+    my_instrument.close()
+    return strom_rechts
+
+
+def HM8143_Quelle_StromLinksCC(strom):  # Compliance Pseudostromsteuerung links
+    spannung_links = 0
+    while HM8143_Quelle_ZeigeStromLinks() < strom:
+        spannung_links += 0.01
+        HM8143_Quelle_SpannungLinks(spannung_links)
+
+
+def HM8143_Quelle_StromRechtsCC(strom):  # Compliance Pseudostromsteuerung rechts
+    spannung_rechts = 0
+    while HM8143_Quelle_ZeigeStromLinks() < strom:
+        spannung_rechts += 0.01
+        HM8143_Quelle_SpannungRechts(spannung_rechts)
+
 
 # HM8150 Funktionsgenerator
 def HM8150_Freq_Wellenform(wellenform):
@@ -606,6 +635,12 @@ def Messung():
         #         HM8143_Quelle_AusgangOn()
         #     case "Spannung rechts":
         #         HM8143_Quelle_SpannungRechts(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Strom rechts":
+        #         HM8143_Quelle_SpannungRechts(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Strom links":
+        #         HM8143_Quelle_SpannungLinks(para[p_i])
         #         HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):    # gehe Variablen durch für aktuellen Parameter
             # match Combo_Variable.get():
