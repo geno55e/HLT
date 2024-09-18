@@ -78,6 +78,7 @@ def HM8143_Quelle_Toggle_Ausgang():
         Button_on_off_HM8143_Quelle["text"] = "Off"
 
 
+
 # HM8150 Funktionsgenerator
 def HM8150_Freq_Wellenform(wellenform):
     print("Wellenform ausgewählt: " + wellenform)
@@ -495,9 +496,12 @@ def Parameter_bestimmen():
     
     
 def Create_table(headers, var):
+
     global Tabelle
+    global h_scrollbar
 
     Tabelle.pack_forget()   # Tabelle vom Fenster löschen (wenn man mehrere Messungen nacheinander durchführt)
+    h_scrollbar.pack_forget()
 
     for i in Tabelle.get_children():    # Daten in Tabelle löschen damit bei erneuter Messung Tabelle leer ist
         Tabelle.delete(i)
@@ -518,7 +522,7 @@ def Create_table(headers, var):
 
     # Tabelle und Scrollbar anzeigen
     Tabelle.pack(fill='both', expand=True, padx=10, pady=10)
-    h_scrollbar = ttk.Scrollbar(Frame_Tabelle, orient=tk.HORIZONTAL, command=Tabelle.xview)
+
     h_scrollbar.pack(side='bottom', fill='x')
     Tabelle.configure(xscrollcommand=h_scrollbar.set)
 
@@ -551,7 +555,6 @@ def Messung():
     ziel = float(Eingabe_Zielwert_Variable.get())
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
 
-
     # match Combo_Variable_Einteilung.get():
     #     case "linear":
     #         start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
@@ -571,19 +574,22 @@ def Messung():
     var_x = []
     mess_y = []
     x_i = 0
-    # para = ([1, 2, 4])
-    # para = Eingabe_Parameter.get().split(";")
+
     para = Parameter_bestimmen()
 
     progressbar['maximum'] = int((ziel - start) / schritt) * len(para)  # Lege das Maximum von der Progressbar fest
 
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
-            headers = [str(i) + "V (Parameter)" for i in para]
+            if len(para) == 1:
+                headers = ["Messung V"]
+            else:
+                headers = ["Messung " + str(i) + "V (Parameter)" for i in para]
         case "Strom links" | "Strom rechts":
-            headers = [str(i) + "V (Parameter)" for i in para]
-        case _:
-            headers = [str(i) + " (Parameter)" for i in para]
+            if len(para) == 1:
+                headers = ["Messung A"]
+            else:
+                headers = ["Messung " + str(i) + "A (Parameter)" for i in para]
 
     Create_table(headers, list(start_schritt_ziel))
 
@@ -594,6 +600,13 @@ def Messung():
         var_x = []
         mess_y = []
         x_i = 0
+        # match Combo_Parameter.get():
+        #     case "Spannung links":
+        #         HM8143_Quelle_SpannungLinks(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Spannung rechts":
+        #         HM8143_Quelle_SpannungRechts(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):    # gehe Variablen durch für aktuellen Parameter
             # match Combo_Variable.get():
             #     case "Spannung links":
@@ -620,6 +633,7 @@ def Messung():
             x_i += 1
             progress += 1
             progressbar['value'] = progress  # Progress um eins erweitern
+
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
@@ -661,6 +675,7 @@ Frame_Plot.place(relx=0.23, y=0, relwidth=0.45, relheight=1)
 Frame_Tabelle.place(relx=0.68, y=0, relwidth=0.32, relheight=1)
 
 Tabelle = ttk.Treeview(Frame_Tabelle, selectmode='browse')
+h_scrollbar = ttk.Scrollbar(Frame_Tabelle, orient=tk.HORIZONTAL, command=Tabelle.xview)
 
 style = ttk.Style()
 # style.configure('My.TButton', background='lightblue', foreground='black')
