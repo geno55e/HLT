@@ -7,7 +7,8 @@ from tkinter import ttk
 from time import sleep
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-from MOSFET import simulate_mosfet_current
+
+# from MOSFET import simulate_mosfet_current
 
 
 # HM8143 Spannungsquelle
@@ -28,30 +29,30 @@ def HM8143_Quelle_remoteOff():
 def HM8143_Quelle_SpannungLinks(spannung):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
-    print('SU1:' + str(spannung))
-    my_instrument.write('SU1:'+str(spannung))
+    # print('SU1:' + str(spannung))
+    my_instrument.write('SU1:' + str(spannung))
     my_instrument.close()
 
 
 def HM8143_Quelle_SpannungRechts(spannung):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
-    print('SU2:' + str(spannung))
-    my_instrument.write('SU2:'+str(spannung))
+    # print('SU2:' + str(spannung))
+    my_instrument.write('SU2:' + str(spannung))
     my_instrument.close()
 
 
 def HM8143_Quelle_StromLinks(strom):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
-    my_instrument.write('SI1:'+str(strom))
+    my_instrument.write('SI1:' + str(strom))
     my_instrument.close()
 
 
 def HM8143_Quelle_StromRechts(strom):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
-    my_instrument.write('SI2:'+str(strom))
+    my_instrument.write('SI2:' + str(strom))
     my_instrument.close()
 
 
@@ -132,7 +133,7 @@ def HM8150_Freq_Wellenform(wellenform):
             print("Sägezahn")
             my_instrument.write('RMP')
         case _:
-            print(wellenform+" nicht bekannt")
+            print(wellenform + " nicht bekannt")
 
     my_instrument.close()
 
@@ -186,7 +187,7 @@ def HM8150_Freq_Toggle_Output():
 def HM8150_Freq_Amplitude(amplitude):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
-    my_instrument.write('AMP:'+str(amplitude))
+    my_instrument.write('AMP:' + str(amplitude))
     my_instrument.write('DAM')
     my_instrument.close()
 
@@ -194,7 +195,7 @@ def HM8150_Freq_Amplitude(amplitude):
 def HM8150_Freq_Frequenz(frequenz):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
-    my_instrument.write('FRQ:'+str(frequenz))
+    my_instrument.write('FRQ:' + str(frequenz))
     my_instrument.write('DFR')
     my_instrument.close()
 
@@ -202,7 +203,7 @@ def HM8150_Freq_Frequenz(frequenz):
 def HM8150_Freq_Offset(offset):
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
-    my_instrument.write('OFS:'+str(offset))
+    my_instrument.write('OFS:' + str(offset))
     my_instrument.write('DOF')
     my_instrument.close()
 
@@ -211,19 +212,19 @@ def HM8150_Freq_Offset(offset):
 def ConvertMessbereichToDecimalString():
     match Combo_Messbereich_Fluke.get():
         case "100uA":
-            return "0,000001"
+            return "0.000001"
 
         case "1mA":
-            return "0,001"
+            return "0.001"
 
         case "10mA":
-            return "0,01"
+            return "0.01"
 
         case "100mV" | "100mA":
-            return "0,1"
+            return "0.1"
 
         case "400mA":
-            return "0,4"
+            return "0.4"
 
         case "1V" | "1A":
             return "1"
@@ -363,15 +364,15 @@ def Aktualisiere_Widgets_Parameter(parameter_einteilung):
 def ConvertMessgroesseToSCPI():
     match Combo_Messgroesse_Fluke.get():
         case "Gleichspannung":
-            return ":CONF:VOLT:DC "
+            return "CONF:VOLT:DC "
         case "Wechselspannung":
-            return ":CONF:VOLT:AC "
+            return "CONF:VOLT:AC "
         case "Gleichstrom":
-            return ":CONF:CURR:DC "
+            return "CONF:CURR:DC "
         case "Wechselstrom":
-            return ":CONF:CURR:AC "
+            return "CONF:CURR:AC "
         case "Widerstand":
-            return ":CONF:RES "
+            return "CONF:RES "
 
 
 def setIntegrationTime():
@@ -394,48 +395,24 @@ def MessungStop():
     messungStop = True
 
 
-def Fluke_Messe_Wert(v, p):
-
-    # Messgröße Fluke
-    # vdc = ":CONF:VOLT:DC "
-    # vac = ":CONF:VOLT:AC "
-    # adc = ":CONF:CURR:DC "
-    # aac = ":CONF:CURR:AC "
-    # res = ":CONF:RES "
-
-    # Integrationszeit Fluke
-    # vdc_nplc = ":volt:dc:nplc 1"
-    # vac_nplc = ":volt:ac:band 200"
-    # adc_nplc = ":curr:dc:nplc 1"
-    # aac_nplc = ":curr:ac:band 200"
-    # res_nplc = ":res:nplc 1"
-
-    # Trigger
-    # trig = ";:TRIG:DEL 0"
-    # trig = ";:TRIG:SOUR BUS"
-
-    # Commands Fluke
-    # Aufbau: ...Messgröße+Messbereich+Integrationszeit+Trigger
-
-    # messgroesse = ConvertMessgroesseToSCPI()
-    # messbereich = ConvertMessbereichToDecimalString()
-    # integrationszeit = setIntegrationTime().upper()
-
-    # print(messgroesse+messbereich+trig+integrationszeit)
-
+def Fluke_Messe_Wert_live():
     # zum TESTEN auskommentiert
-    # rm = pyvisa.ResourceManager()
-    # my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
-    # my_instrument.write('*RST;*CLS;CONF:VOLT:DC '+str(messbereich)+';:VOLT:DC:NPLC 1;:TRIG:SOUR BUS')
-    # gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?')) # Wandle nach float und speichere gemessenen Wert
-    # my_instrument.write('*RST;*CLS;syst:local')
-    # my_instrument.close()
-
-    gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
+    gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?'))  # Wandle nach float und speichere gemessenen Wert
+    print("MESSUNG: " + str(gemessener_wert))
+    my_instrument.close()
 
     return gemessener_wert
 
 
+# def Fluke_Messe_Wert_test(v, p):
+#     gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
+
+#     return gemessener_wert
+# G = 6
+# D = 8
+# S = 7
 def Geraete_lokal_bedienen():
     global geraete_lokal_on
     if geraete_lokal_on:
@@ -466,6 +443,7 @@ def Geraete_lokal_bedienen():
         Button_Start_Messung.configure(state='normal')
         Button_Stop_Messung.configure(state='normal')
         style.configure('My.TButton', foreground='black')
+        HM8143_Quelle_remoteOn()
     else:
         # Wechsle zu lokal
         Eingabe_Spannung_links_HM8143_Quelle.configure(state='disabled')
@@ -494,6 +472,7 @@ def Geraete_lokal_bedienen():
         Button_Start_Messung.configure(state='disabled')
         Button_Stop_Messung.configure(state='disabled')
         style.configure('My.TButton', foreground='green')
+        HM8143_Quelle_remoteOff()
     # Zustand umschalten
     geraete_lokal_on = not geraete_lokal_on
 
@@ -501,7 +480,8 @@ def Geraete_lokal_bedienen():
 def Parameter_bestimmen():
     match Combo_Parameter_Einteilung.get():
         case "linear":
-            return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()), num=int(Eingabe_Schritte_Parameter.get()))
+            return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()),
+                               num=int(Eingabe_Schritte_Parameter.get()))
         case "quadratisch":
             i_min = np.square(int(Eingabe_Startwert_Parameter.get()))
             i_max = np.square(int(Eingabe_Zielwert_Parameter.get()))
@@ -522,17 +502,16 @@ def Parameter_bestimmen():
             return Eingabe_Parameter.get().split(";")
         case "ohne Parameter":
             return [1]
-    
-    
-def Create_table(headers, var):
 
+
+def Create_table(headers, var):
     global Tabelle
     global h_scrollbar
 
-    Tabelle.pack_forget()   # Tabelle vom Fenster löschen (wenn man mehrere Messungen nacheinander durchführt)
+    Tabelle.pack_forget()  # Tabelle vom Fenster löschen (wenn man mehrere Messungen nacheinander durchführt)
     h_scrollbar.pack_forget()
 
-    for i in Tabelle.get_children():    # Daten in Tabelle löschen damit bei erneuter Messung Tabelle leer ist
+    for i in Tabelle.get_children():  # Daten in Tabelle löschen damit bei erneuter Messung Tabelle leer ist
         Tabelle.delete(i)
 
     # Konfigurieren der ersten Spalte "#0" und setzen der Überschrift auf "Variable"
@@ -574,11 +553,51 @@ def Save_Messdaten_to_File():
         print(f"Numpy-Matrix wurde in {file_path} gespeichert.")
 
 
+def Fluke_set_Range():
+    # Messgröße Fluke
+    # vdc = "CONF:VOLT:DC "
+    # vac = "CONF:VOLT:AC "
+    # adc = "CONF:CURR:DC "
+    # aac = "CONF:CURR:AC "
+    # res = "CONF:RES "
+
+    # Integrationszeit Fluke
+    # vdc_nplc = ":volt:dc:nplc 1"
+    # vac_nplc = ":volt:ac:band 200"
+    # adc_nplc = ":curr:dc:nplc 1"
+    # aac_nplc = ":curr:ac:band 200"
+    # res_nplc = ":res:nplc 1"
+
+    # Trigger
+    # trig = ":TRIG:DEL 0"
+    trig = ":TRIG:SOUR BUS"
+    # trig = ":TRIG:SOUR IMM"
+
+    # Commands Fluke
+    # Aufbau: ...Messgröße+Messbereich+Integrationszeit+Trigger
+
+    messgroesse = ConvertMessgroesseToSCPI()
+    messbereich = ConvertMessbereichToDecimalString()
+    integrationszeit = setIntegrationTime().upper()
+    print(messgroesse + messbereich + trig + integrationszeit)
+
+    # zum TESTEN auskommentiert
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
+    set_range = '*RST;*CLS;' + messgroesse + str(messbereich) + ';' + integrationszeit + ';' + trig
+    print(set_range)
+    my_instrument.write(set_range)
+    # gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?')) # Wandle nach float und speichere gemessenen Wert
+    # print("MESSUNG: " + str(gemessener_wert) + messgroesse)
+    # my_instrument.write('*RST;*CLS;syst:local')
+    my_instrument.close()
+
+
 # Hauptfunktion
 def Messung():
     Widgets_sperren()
-    # HM8143_Quelle_remoteOn()
-    # HM8143_Quelle_AusgangOff()
+    HM8143_Quelle_remoteOn()
+    HM8143_Quelle_AusgangOff()
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
@@ -607,7 +626,7 @@ def Messung():
     para = Parameter_bestimmen()
 
     progressbar['maximum'] = int((ziel - start) / schritt) * len(para)  # Lege das Maximum von der Progressbar fest
-
+    print("MESSPUNKTE gesamt: " + str(int((ziel - start) / schritt) * len(para)))
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
             if len(para) == 1:
@@ -625,46 +644,54 @@ def Messung():
     messdaten = np.transpose(start_schritt_ziel)
     p_i = 0
     progress = 0
+    sleep(0.1)
     while (p_i < len(para)) and (not messungStop):  # gehe Parameter durch
         var_x = []
         mess_y = []
         x_i = 0
-        # match Combo_Parameter.get():
-        #     case "Spannung links":
-        #         HM8143_Quelle_SpannungLinks(para[p_i])
-        #         HM8143_Quelle_AusgangOn()
-        #     case "Spannung rechts":
-        #         HM8143_Quelle_SpannungRechts(para[p_i])
-        #         HM8143_Quelle_AusgangOn()
-        #     case "Strom rechts":
-        #         HM8143_Quelle_SpannungRechts(para[p_i])
-        #         HM8143_Quelle_AusgangOn()
-        #     case "Strom links":
-        #         HM8143_Quelle_SpannungLinks(para[p_i])
-        #         HM8143_Quelle_AusgangOn()
-        while x_i < len(start_schritt_ziel) and (not messungStop):    # gehe Variablen durch für aktuellen Parameter
-            # match Combo_Variable.get():
-            #     case "Spannung links":
-            #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
-            #         HM8143_Quelle_AusgangOn()
-            #     case "Spannung rechts":
-            #         HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
-            #         HM8143_Quelle_AusgangOn()
+        match Combo_Parameter.get():
+            case "Spannung links":
+                HM8143_Quelle_SpannungLinks(para[p_i])
+                HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
+                HM8143_Quelle_AusgangOn()
+            case "Spannung rechts":
+                HM8143_Quelle_SpannungRechts(para[p_i])
+                HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
+                HM8143_Quelle_AusgangOn()
+            case "Strom rechts":
+                HM8143_Quelle_SpannungRechts(para[p_i])
+                HM8143_Quelle_AusgangOn()
+            case "Strom links":
+                HM8143_Quelle_SpannungLinks(para[p_i])
+                HM8143_Quelle_AusgangOn()
+        while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
+            match Combo_Variable.get():
+                case "Spannung links":
+                    HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
+                    HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
+                    HM8143_Quelle_AusgangOn()
+                case "Spannung rechts":
+                    HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
+                    HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
+                    HM8143_Quelle_AusgangOn()
+            sleep(1)
             ax.clear()
             ax.grid()
-            for p_fertig in range(p_i):     # Ab den zweiten Parameter, gib die Kurven davor sofort aus
-                ax.plot(start_schritt_ziel, messdaten[p_fertig+1, :], '--.')
+            for p_fertig in range(p_i):  # Ab den zweiten Parameter, gib die Kurven davor sofort aus
+                ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.')
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
-            wert_gemessen = Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i]))
+            wert_gemessen = Fluke_Messe_Wert_live()  # Messe live
+            # wert_gemessen = Fluke_Messe_Wert_live(start_schritt_ziel[x_i,]) # Messe zum Testen
             mess_y.append(wert_gemessen)
-            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert(start_schritt_ziel[x_i,], int(para[p_i])))  # Tabelle
+            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
+            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_live(start_schritt_ziel[x_i,]))  # Tabelle zum Testen
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
             canvas.draw()
             master.update()
-            sleep(0.01)
+            sleep(0.1)
             x_i += 1
             progress += 1
             progressbar['value'] = progress  # Progress um eins erweitern
@@ -675,6 +702,7 @@ def Messung():
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
+    HM8143_Quelle_AusgangOff()
     Widgets_entsperren()
 
 
@@ -723,7 +751,6 @@ Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen", st
 Frame_Lokal.pack(fill='x')
 Button_Geraete_lokal.pack(padx=10, pady=10)
 
-
 # HM8143 Power
 Frame_HM8143_Quelle = ttk.LabelFrame(Frame_Steuerung, text="Spannungsquelle HM8143")
 
@@ -760,7 +787,7 @@ Label_Strom_links_HM8143_Quelle.grid(column=0, row=2, sticky="W", padx=5, pady=1
 Label_Strom_rechts_HM8143_Quelle.grid(column=2, row=2, sticky="E", padx=5, pady=1)
 Eingabe_Strom_links_HM8143_Quelle.grid(column=0, row=3, sticky="W", padx=5, pady=1)
 Button_on_off_HM8143_Quelle.grid(column=1, row=3, padx=5, pady=1)
-Eingabe_Strom_rechts_HM8143_Quelle.grid(column=2, row=3, sticky="E",  padx=5, pady=1)
+Eingabe_Strom_rechts_HM8143_Quelle.grid(column=2, row=3, sticky="E", padx=5, pady=1)
 
 # HM8150 Frequenzgenerator
 Frame_HM8150_Freq = ttk.LabelFrame(Frame_Steuerung, text="Funktionsgenerator HM8150")
@@ -814,7 +841,6 @@ Label_Offset_Button_HM8150_Freq.grid(column=2, row=2, columnspan=2, padx=5, pady
 Button_Output_on_off_HM8150_Freq.grid(column=0, row=3, columnspan=2, padx=5, pady=1)
 Button_Offset_on_off_HM8150_Freq.grid(column=2, row=3, columnspan=2, padx=5, pady=1)
 
-
 # Fluke
 Frame_Fluke = ttk.LabelFrame(Frame_Steuerung, text="Multimeter Fluke 8846")
 
@@ -827,25 +853,26 @@ Combo_Messgroesse_Fluke = ttk.Combobox(
     values=["Gleichspannung", "Wechselspannung", "Gleichstrom", "Wechselstrom", "Widerstand"],
     width=18
 )
-Combo_Messgroesse_Fluke.current(0)
+Combo_Messgroesse_Fluke.current(2)
 
 Combo_Messgroesse_Fluke.bind("<<ComboboxSelected>>", (lambda event: Fluke_bestimme_Messbereich(Combo_Messgroesse_Fluke.get())))
 
 Combo_Messbereich_Fluke = ttk.Combobox(
     Frame_Fluke,
     state="readonly",
-    values=fluke_Messbereich_Spannung,
+    values=fluke_Messbereich_Strom,
     width=10
 )
-Combo_Messbereich_Fluke.current(0)
 
+Combo_Messbereich_Fluke.current(3)
+
+Combo_Messbereich_Fluke.bind("<<ComboboxSelected>>", (lambda event: Fluke_set_Range()))
 # Fluke Design
 Frame_Fluke.pack(fill='x')
 Label_Messgroesse_Fluke.grid(column=0, row=0, sticky="W", padx=5, pady=1)
 Label_Messbereich_Fluke.grid(column=1, row=0, padx=5, pady=1)
 Combo_Messgroesse_Fluke.grid(column=0, row=1, sticky="W", padx=5, pady=1)
 Combo_Messbereich_Fluke.grid(column=1, row=1, padx=5, pady=1)
-
 
 # Messung
 Frame_Messung = ttk.LabelFrame(Frame_Steuerung, text="Messung")
@@ -861,7 +888,7 @@ Combo_Variable = ttk.Combobox(
     values=["Spannung links", "Spannung rechts"],
     width=15
 )
-Combo_Variable.current(0)
+Combo_Variable.current(1)
 
 Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Variable.insert(0, "0")
@@ -879,7 +906,7 @@ Combo_Parameter = ttk.Combobox(
     values=["Spannung links", "Spannung rechts", "Strom links", "Strom rechts"],
     width=15
 )
-Combo_Parameter.current(1)
+Combo_Parameter.current(0)
 
 Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
 
@@ -909,7 +936,6 @@ Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung, width=6)
 Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File, width=9)
 Button_Stop_Messung = ttk.Button(Frame_Messung, text="Stop", command=MessungStop, width=6)
-
 
 # Messung Design
 Frame_Messung.pack(fill='x')
@@ -941,7 +967,6 @@ Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 Button_Start_Messung.grid(column=0, row=6, padx=5, pady=3)
 Button_Messdaten_Speichern.grid(column=1, row=6, padx=5, pady=3)
 Button_Stop_Messung.grid(column=2, row=6, padx=5, pady=3)
-
 
 fig, ax = plt.subplots()
 ax.grid()
