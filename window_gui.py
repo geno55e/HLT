@@ -8,7 +8,7 @@ from time import sleep
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 
-# from MOSFET import simulate_mosfet_current
+from MOSFET import simulate_mosfet_current
 
 
 # HM8143 Spannungsquelle
@@ -406,10 +406,10 @@ def Fluke_Messe_Wert_live():
     return gemessener_wert
 
 
-# def Fluke_Messe_Wert_test(v, p):
-#     gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
+def Fluke_Messe_Wert_test(v, p):
+    gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
 
-#     return gemessener_wert
+    return gemessener_wert
 # G = 6
 # D = 8
 # S = 7
@@ -473,6 +473,8 @@ def Geraete_lokal_bedienen():
         Button_Stop_Messung.configure(state='disabled')
         style.configure('My.TButton', foreground='green')
         HM8143_Quelle_remoteOff()
+        HM8143_Quelle_AusgangOff()
+        HM8150_Freq_OutputOff()
     # Zustand umschalten
     geraete_lokal_on = not geraete_lokal_on
 
@@ -579,7 +581,7 @@ def Fluke_set_Range():
     messgroesse = ConvertMessgroesseToSCPI()
     messbereich = ConvertMessbereichToDecimalString()
     integrationszeit = setIntegrationTime().upper()
-    print(messgroesse + messbereich + trig + integrationszeit)
+    print(messgroesse + messbereich + integrationszeit + trig)
 
     # zum TESTEN auskommentiert
     rm = pyvisa.ResourceManager()
@@ -595,9 +597,12 @@ def Fluke_set_Range():
 
 # Hauptfunktion
 def Messung():
+
     Widgets_sperren()
+    Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
+
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
@@ -630,18 +635,19 @@ def Messung():
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
             if len(para) == 1:
-                headers = ["Messung V"]
+                headers = [Combo_Messgroesse_Fluke.get()]
             else:
-                headers = ["Messung " + str(i) + "V (Parameter)" for i in para]
+                headers = [Combo_Messgroesse_Fluke.get() + ", Parameter " + str(i) + "V" for i in para]
         case "Strom links" | "Strom rechts":
             if len(para) == 1:
-                headers = ["Messung A"]
+                headers = [Combo_Messgroesse_Fluke.get()]
             else:
-                headers = ["Messung " + str(i) + "A (Parameter)" for i in para]
+                headers = [Combo_Messgroesse_Fluke.get() + ", Parameter " + str(i) + "A" for i in para]
 
     Create_table(headers, list(start_schritt_ziel))
 
     messdaten = np.transpose(start_schritt_ziel)
+
     p_i = 0
     progress = 0
     sleep(0.1)
@@ -674,24 +680,29 @@ def Messung():
                     HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
-            sleep(1)
+
+            sleep(0.2)
+
+            # Speichere Daten und aktualisiere Plot
             ax.clear()
             ax.grid()
             for p_fertig in range(p_i):  # Ab den zweiten Parameter, gib die Kurven davor sofort aus
                 ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.')
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
-            wert_gemessen = Fluke_Messe_Wert_live()  # Messe live
-            # wert_gemessen = Fluke_Messe_Wert_live(start_schritt_ziel[x_i,]) # Messe zum Testen
+
+            # wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
+
+            wert_gemessen = Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i])  # Messe zum Testen
+
             mess_y.append(wert_gemessen)
-            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
-            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_live(start_schritt_ziel[x_i,]))  # Tabelle zum Testen
+            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
+            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i]))  # Tabelle zum Testen
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
             canvas.draw()
             master.update()
-            sleep(0.1)
             x_i += 1
             progress += 1
             progressbar['value'] = progress  # Progress um eins erweitern
@@ -699,10 +710,12 @@ def Messung():
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
+
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     HM8143_Quelle_AusgangOff()
+    HM8150_Freq_OutputOff()
     Widgets_entsperren()
 
 
