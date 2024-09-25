@@ -110,6 +110,14 @@ def HM8143_Quelle_StromRechtsCC(strom):  # Compliance Pseudostromsteuerung recht
 
 
 # HM8150 Funktionsgenerator
+
+# Reihenfolge der Befehle um das Gerät einzustellen:
+# 1. Signalform (SIN;TRI;...)
+# 2. Frequenz (FRQ:xxxx )
+# 3. Offsetspannung (OFS:xxx)
+# 4. Amplitude setzen (AMP:xxx)
+# 5. Ausgang ein/ausschalten (OT1 ; OT0)
+
 def HM8150_Freq_Wellenform(wellenform):
     print("Wellenform ausgewählt: " + wellenform)
     rm = pyvisa.ResourceManager()
@@ -208,7 +216,7 @@ def HM8150_Freq_Offset(offset):
     my_instrument.close()
 
 
-# Fluke
+# Fluke Multimeter 8846a
 def ConvertMessbereichToDecimalString():
     match Combo_Messbereich_Fluke.get():
         case "100uA":
@@ -413,6 +421,8 @@ def Fluke_Messe_Wert_test(v, p):
 # G = 6
 # D = 8
 # S = 7
+
+
 def Geraete_lokal_bedienen():
     global geraete_lokal_on
     if geraete_lokal_on:
@@ -598,10 +608,10 @@ def Fluke_set_Range():
 # Hauptfunktion
 def Messung():
 
-    Widgets_sperren()
-    Fluke_set_Range()
-    HM8143_Quelle_remoteOn()
-    HM8143_Quelle_AusgangOff()
+    # Widgets_sperren()
+    # Fluke_set_Range()
+    # HM8143_Quelle_remoteOn()
+    # HM8143_Quelle_AusgangOff()
 
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
@@ -655,31 +665,31 @@ def Messung():
         var_x = []
         mess_y = []
         x_i = 0
-        match Combo_Parameter.get():
-            case "Spannung links":
-                HM8143_Quelle_SpannungLinks(para[p_i])
-                HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
-                HM8143_Quelle_AusgangOn()
-            case "Spannung rechts":
-                HM8143_Quelle_SpannungRechts(para[p_i])
-                HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
-                HM8143_Quelle_AusgangOn()
-            case "Strom rechts":
-                HM8143_Quelle_SpannungRechts(para[p_i])
-                HM8143_Quelle_AusgangOn()
-            case "Strom links":
-                HM8143_Quelle_SpannungLinks(para[p_i])
-                HM8143_Quelle_AusgangOn()
+        # match Combo_Parameter.get():
+        #     case "Spannung links":
+        #         HM8143_Quelle_SpannungLinks(para[p_i])
+        #         HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Spannung rechts":
+        #         HM8143_Quelle_SpannungRechts(para[p_i])
+        #         HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Strom rechts":
+        #         HM8143_Quelle_SpannungRechts(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
+        #     case "Strom links":
+        #         HM8143_Quelle_SpannungLinks(para[p_i])
+        #         HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
-            match Combo_Variable.get():
-                case "Spannung links":
-                    HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
-                    HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
-                    HM8143_Quelle_AusgangOn()
-                case "Spannung rechts":
-                    HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
-                    HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
-                    HM8143_Quelle_AusgangOn()
+            # match Combo_Variable.get():
+            #     case "Spannung links":
+            #         HM8143_Quelle_SpannungLinks(start_schritt_ziel[x_i,])
+            #         HM8143_Quelle_StromLinks(Eingabe_Strom_links_HM8143_Quelle.get())
+            #         HM8143_Quelle_AusgangOn()
+            #     case "Spannung rechts":
+            #         HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
+            #         HM8143_Quelle_StromRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
+            #         HM8143_Quelle_AusgangOn()
 
             sleep(0.2)
 
@@ -714,8 +724,8 @@ def Messung():
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
-    HM8143_Quelle_AusgangOff()
-    HM8150_Freq_OutputOff()
+    # HM8143_Quelle_AusgangOff()
+    # HM8150_Freq_OutputOff()
     Widgets_entsperren()
 
 
@@ -898,7 +908,7 @@ Label_Zielwert = tk.Label(Frame_Messung, text="Zielwert")
 Combo_Variable = ttk.Combobox(
     Frame_Messung,
     state="readonly",
-    values=["Spannung links", "Spannung rechts"],
+    values=["Spannung links", "Spannung rechts", "Offset", "Frequenz"],
     width=15
 )
 Combo_Variable.current(1)
