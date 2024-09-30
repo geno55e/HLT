@@ -274,6 +274,7 @@ def ConvertMessbereichToDecimalString():
             return "0"
 
 
+
 def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
     match messgroesse_eingestellt:
         case "Gleichspannung" | "Wechselspannung":
