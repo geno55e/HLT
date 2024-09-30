@@ -613,7 +613,38 @@ def Fluke_Messe_Wert_live():
 
     return gemessener_wert
 
+
 # Hauptfunktion
+def pseudo_strom_quelle(zielstrom, startspannung=0, schrittweite=0.01, max_iterationen=15):
+    spannung = startspannung  # Initiale Spannung
+    toleranz = 0.01  # Toleranz in Ampere (z.B. ±0.01 A)
+    para_auswahl = Combo_Parameter.get()
+    aktueller_strom = HM8143_Quelle_ZeigeStromLinks()
+
+    for iteration in range(max_iterationen):
+        if para_auswahl == "Strom links":
+            aktueller_strom = HM8143_Quelle_ZeigeStromLinks()
+        if para_auswahl == "Strom rechts":
+            aktueller_strom = HM8143_Quelle_ZeigeStromRechts()
+
+        abweichung = zielstrom - aktueller_strom
+
+        # Überprüfe, ob die Abweichung innerhalb der Toleranz liegt
+        if abs(abweichung) <= toleranz:
+            print(f"Ziel erreicht nach {iteration} Iterationen!")
+            return None
+
+        # Passe die Spannung basierend auf der Abweichung an
+        if abweichung > 0:
+            spannung += schrittweite  # Erhöhe die Spannung
+        else:
+            spannung -= schrittweite  # Verringere die Spannung
+        sleep(0.2)
+
+    print("Maximale Iterationen erreicht, keine genaue Lösung gefunden.")
+    return spannung
+
+
 def Messung():
 
     Widgets_sperren()
