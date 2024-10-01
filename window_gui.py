@@ -95,6 +95,21 @@ def HM8143_Quelle_ZeigeStromRechts():
     return strom_rechts
 
 
+def HM8143_Quelle_ZeigeSpannungLinks():
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    spannung_links = my_instrument.query('MU1')
+    my_instrument.close()
+    return spannung_links
+
+
+def HM8143_Quelle_ZeigeSpannungRechts():
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    spannung_rechts = my_instrument.query('MU2')
+    my_instrument.close()
+    return spannung_rechts
+
 def HM8143_Quelle_StromBegrenzLinksCC(strom):  # Compliance Pseudostromsteuerung links
     spannung_links = 0
     while HM8143_Quelle_ZeigeStromLinks() < strom:
@@ -123,6 +138,7 @@ def HM8150_Freq_remoteOff():
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
     my_instrument.close()
+
 
 def HM8150_Freq_Wellenform(wellenform):
     print("Wellenform ausgewählt: " + wellenform)
@@ -272,7 +288,6 @@ def ConvertMessbereichToDecimalString():
 
         case _:
             return "0"
-
 
 
 def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
@@ -564,6 +579,7 @@ def Fluke_reset():
     my_instrument.write('*RST;*CLS;syst:local')
     my_instrument.close()
 
+
 def Fluke_set_Range():
     # Messgröße Fluke
     # vdc = "CONF:VOLT:DC "
@@ -614,7 +630,7 @@ def Fluke_Messe_Wert_live():
     return gemessener_wert
 
 
-# Hauptfunktion
+# Hauptfunktionen
 def pseudo_strom_quelle(zielstrom, startspannung=0, schrittweite=0.01, max_iterationen=15):
     spannung = startspannung  # Initiale Spannung
     toleranz = 0.01  # Toleranz in Ampere (z.B. ±0.01 A)
@@ -643,6 +659,51 @@ def pseudo_strom_quelle(zielstrom, startspannung=0, schrittweite=0.01, max_itera
 
     print("Maximale Iterationen erreicht, keine genaue Lösung gefunden.")
     return spannung
+
+
+def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=30.0, min_voltage=0.0, step_size=0.01):
+    """
+    Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
+
+    :param target_current: Der gewünschte Strom in Ampere.
+    :param start_voltage: Die Anfangsspannung für die Regelung.
+    :param tolerance: Die zulässige Abweichung vom Zielstrom in Ampere (±0.001 A).
+    :param max_voltage: Maximale Spannung, die eingestellt werden kann.
+    :param min_voltage: Minimale Spannung, die eingestellt werden kann.
+    :param step_size: Schrittweite, um die Spannung anzupassen.
+    """
+
+    HM8143_Quelle_StromBegrenzLinks(target_current)     # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung)
+
+    def get_current():
+        # Liest den aktuellen Strom und gibt ihn als float zurück
+        current_str = HM8143_Quelle_ZeigeStromLinks()
+        return float(current_str.replace("A", ""))
+
+    # Starte die Regelung der Spannung
+    current_voltage = start_voltage
+    HM8143_Quelle_SpannungLinks(current_voltage)    # Setze linke Quelle auf die Start-Spannung
+
+    while True:
+        current = get_current()
+        error = target_current - current
+
+        # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
+        if abs(error) <= tolerance:
+            print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ HM8143_Quelle_ZeigeSpannungLinks())
+            break
+        else:
+            # Strom zu niedrig → Spannung erhöhen
+            current_voltage += step_size
+
+        # Stellt sicher, dass der Wert von current_voltage immer im Bereich von min_voltage bis max_voltage liegt (optional)
+        current_voltage = max(min_voltage, min(current_voltage, max_voltage))
+
+        # Spannung einstellen
+        HM8143_Quelle_SpannungLinks(current_voltage)
+
+        # Optionale Ausgabe zur Überwachung
+        print("Aktuelle Spannung: " + HM8143_Quelle_ZeigeSpannungLinks() + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
 def Messung():
@@ -1035,6 +1096,7 @@ progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
 
 Fluke_set_Range()
+
 
 # Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
 def closing_cbk():
