@@ -84,7 +84,7 @@ def HM8143_Quelle_ZeigeStromLinks():
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_links = my_instrument.query('MI1')
     my_instrument.close()
-    return strom_links
+    return strom_links.replace("I1:+", "")
 
 
 def HM8143_Quelle_ZeigeStromRechts():
@@ -92,7 +92,7 @@ def HM8143_Quelle_ZeigeStromRechts():
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_rechts = my_instrument.query('MI2')
     my_instrument.close()
-    return strom_rechts
+    return strom_rechts.replace("I2:+", "")
 
 
 def HM8143_Quelle_ZeigeSpannungLinks():
@@ -100,7 +100,7 @@ def HM8143_Quelle_ZeigeSpannungLinks():
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('MU1')
     my_instrument.close()
-    return spannung_links
+    return float(spannung_links[3:8])
 
 
 def HM8143_Quelle_ZeigeSpannungRechts():
@@ -108,20 +108,15 @@ def HM8143_Quelle_ZeigeSpannungRechts():
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('MU2')
     my_instrument.close()
-    return spannung_rechts
-
-def HM8143_Quelle_StromBegrenzLinksCC(strom):  # Compliance Pseudostromsteuerung links
-    spannung_links = 0
-    while HM8143_Quelle_ZeigeStromLinks() < strom:
-        spannung_links += 0.001
-        HM8143_Quelle_SpannungLinks(spannung_links)
+    return float(spannung_rechts[3:8])
 
 
-def HM8143_Quelle_StromBegrenzRechtsCC(strom):  # Compliance Pseudostromsteuerung rechts
-    spannung_rechts = 0
-    while HM8143_Quelle_ZeigeStromLinks() < strom:
-        spannung_rechts += 0.001
-        HM8143_Quelle_SpannungRechts(spannung_rechts)
+def HM8143_Quelle_Status():
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    status = my_instrument.query('STA?')
+    my_instrument.close()
+    return status
 
 
 # HM8150 Funktionsgenerator
@@ -631,37 +626,7 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def pseudo_strom_quelle(zielstrom, startspannung=0, schrittweite=0.01, max_iterationen=15):
-    spannung = startspannung  # Initiale Spannung
-    toleranz = 0.01  # Toleranz in Ampere (z.B. ±0.01 A)
-    para_auswahl = Combo_Parameter.get()
-    aktueller_strom = HM8143_Quelle_ZeigeStromLinks()
-
-    for iteration in range(max_iterationen):
-        if para_auswahl == "Strom links":
-            aktueller_strom = HM8143_Quelle_ZeigeStromLinks()
-        if para_auswahl == "Strom rechts":
-            aktueller_strom = HM8143_Quelle_ZeigeStromRechts()
-
-        abweichung = zielstrom - aktueller_strom
-
-        # Überprüfe, ob die Abweichung innerhalb der Toleranz liegt
-        if abs(abweichung) <= toleranz:
-            print(f"Ziel erreicht nach {iteration} Iterationen!")
-            return None
-
-        # Passe die Spannung basierend auf der Abweichung an
-        if abweichung > 0:
-            spannung += schrittweite  # Erhöhe die Spannung
-        else:
-            spannung -= schrittweite  # Verringere die Spannung
-        sleep(0.2)
-
-    print("Maximale Iterationen erreicht, keine genaue Lösung gefunden.")
-    return spannung
-
-
-def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=30.0, min_voltage=0.0, step_size=0.01):
+def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=10, min_voltage=0.0, step_size=0.2):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
 
@@ -672,25 +637,34 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
     :param min_voltage: Minimale Spannung, die eingestellt werden kann.
     :param step_size: Schrittweite, um die Spannung anzupassen.
     """
-
-    HM8143_Quelle_StromBegrenzLinks(target_current)     # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung)
-
     def get_current():
         # Liest den aktuellen Strom und gibt ihn als float zurück
         current_str = HM8143_Quelle_ZeigeStromLinks()
         return float(current_str.replace("A", ""))
 
+    HM8143_Quelle_remoteOn()
+    HM8143_Quelle_StromBegrenzLinks(target_current+0.001)   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
+    HM8143_Quelle_AusgangOn()
+    sleep(0.8)
+
+    # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
+    current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
+
     # Starte die Regelung der Spannung
-    current_voltage = start_voltage
+    # if status == "CC1":     # Prüfe ob Ausgang links in Strombegrenzung ist
+    #     current_voltage = float(HM8143_Quelle_ZeigeSpannungLinks())
+
     HM8143_Quelle_SpannungLinks(current_voltage)    # Setze linke Quelle auf die Start-Spannung
 
     while True:
         current = get_current()
-        error = target_current - current
+        error = round((target_current - current),3)
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
         if abs(error) <= tolerance:
-            print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ HM8143_Quelle_ZeigeSpannungLinks())
+            current_voltage += step_size    # Beim erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
+            HM8143_Quelle_SpannungLinks(current_voltage)
+            print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
             break
         else:
             # Strom zu niedrig → Spannung erhöhen
@@ -701,9 +675,13 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
 
         # Spannung einstellen
         HM8143_Quelle_SpannungLinks(current_voltage)
+        sleep(0.3)
 
         # Optionale Ausgabe zur Überwachung
-        print("Aktuelle Spannung: " + HM8143_Quelle_ZeigeSpannungLinks() + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+        print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+
+    # HM8143_Quelle_AusgangOff()
+    HM8143_Quelle_remoteOff()
 
 
 def Messung():
@@ -768,10 +746,10 @@ def Messung():
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
                 case "Strom rechts":
-                    HM8143_Quelle_StromBegrenzRechtsCC(para[p_i])
+                    # HM8143_Quelle_StromBegrenzRechtsCC(para[p_i])
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    HM8143_Quelle_StromBegrenzLinksCC(para[p_i])
+                    # HM8143_Quelle_StromBegrenzLinksCC(para[p_i])
                     HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
             match Combo_Variable.get():
