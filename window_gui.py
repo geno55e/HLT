@@ -291,14 +291,17 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             print("Spannung")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Spannung
             Combo_Messbereich_Fluke.current(0)
+            fluke_Einheit = "V"
         case "Gleichstrom" | "Wechselstrom":
             print("Strom")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Strom
             Combo_Messbereich_Fluke.current(0)
+            fluke_Einheit = "A"
         case "Widerstand":
             print("Widerstand")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(0)
+            fluke_Einheit = "Ohm"
 
 
 def Widgets_sperren():
@@ -630,9 +633,9 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
 
-    :param target_current: Der gewünschte Strom in Ampere.
+    :param target_current: Der gewünschte Strom in A.
     :param start_voltage: Die Anfangsspannung für die Regelung.
-    :param tolerance: Die zulässige Abweichung vom Zielstrom in Ampere (±0.001 A).
+    :param tolerance: Die zulässige Abweichung vom Zielstrom (±0.001 A).
     :param max_voltage: Maximale Spannung, die eingestellt werden kann.
     :param min_voltage: Minimale Spannung, die eingestellt werden kann.
     :param step_size: Schrittweite, um die Spannung anzupassen.
@@ -662,7 +665,7 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
         if abs(error) <= tolerance:
-            current_voltage += step_size    # Beim erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
+            current_voltage += step_size    # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
             HM8143_Quelle_SpannungLinks(current_voltage)
             print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
             break
@@ -778,7 +781,9 @@ def Messung():
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
             # wert_gemessen = Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i])  # Messe zum Testen
-            print(str(progress+1)+"/"+str(messwerte_insgesamt)+": MESSUNG: " + str(wert_gemessen))
+            print(str(progress + 1) + "/" + str(messwerte_insgesamt) + "      VAR: " + str(x_i) + "     FLUKE: " + str(wert_gemessen))
+            print("Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "  Spannung: " + str(HM8143_Quelle_ZeigeSpannungRechts()))
+            print("   Strom: " + str(HM8143_Quelle_ZeigeStromLinks()) + "        Strom:" + str(HM8143_Quelle_ZeigeStromRechts()))
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
             # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i]))  # Tabelle zum Testen
@@ -811,6 +816,7 @@ var_x = []
 mess_y = []
 messungStop = False
 geraete_lokal_on = False
+fluke_Einheit = "X"
 
 window_height = 700
 window_width = 1065
@@ -1072,6 +1078,7 @@ canvas.get_tk_widget().pack(fill='both', expand=True)
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
+toolbar = NavigationToolbar2Tk(canvas, Frame_Plot)
 
 Fluke_set_Range()
 
