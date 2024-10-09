@@ -488,9 +488,10 @@ def Geraete_lokal_bedienen():
         Button_Start_Messung.configure(state='disabled')
         Button_Stop_Messung.configure(state='disabled')
         style.configure('My.TButton', foreground='green')
-        HM8143_Quelle_remoteOff()
         HM8143_Quelle_AusgangOff()
         HM8150_Freq_OutputOff()
+        HM8143_Quelle_remoteOff()
+
     # Zustand umschalten
     geraete_lokal_on = not geraete_lokal_on
 
@@ -629,7 +630,7 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=10, min_voltage=0.0, step_size=0.2):
+def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=10, min_voltage=0.0, step_size=0.1):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
 
@@ -646,9 +647,10 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
         return float(current_str.replace("A", ""))
 
     HM8143_Quelle_remoteOn()
-    HM8143_Quelle_StromBegrenzLinks(target_current+0.001)   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
+    HM8143_Quelle_StromBegrenzLinks(float(target_current))   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
+    # HM8143_Quelle_StromBegrenzLinks(float(target_current)+0.001)   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
     HM8143_Quelle_AusgangOn()
-    sleep(0.8)
+    sleep(0.4)
 
     # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
     current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
@@ -661,11 +663,11 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
 
     while True:
         current = get_current()
-        error = round((target_current - current),3)
+        error = round((float(target_current) - current),3)
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
-        if abs(error) <= tolerance:
-            current_voltage += step_size    # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
+        if abs(error) < tolerance:
+            current_voltage += step_size    # Beim erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
             HM8143_Quelle_SpannungLinks(current_voltage)
             print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
             break
@@ -678,13 +680,13 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
 
         # Spannung einstellen
         HM8143_Quelle_SpannungLinks(current_voltage)
-        sleep(0.3)
+        sleep(0.5)
 
         # Optionale Ausgabe zur Überwachung
         print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
     # HM8143_Quelle_AusgangOff()
-    HM8143_Quelle_remoteOff()
+    # HM8143_Quelle_remoteOff()
 
 
 def Messung():
@@ -738,21 +740,23 @@ def Messung():
         var_x = []
         mess_y = []
         x_i = 0
+        para_now = para[p_i]
         if Combo_Parameter_Einteilung.get() != "ohne Parameter":
             match Combo_Parameter.get():
                 case "Spannung links":
-                    HM8143_Quelle_SpannungLinks(para[p_i])
+                    HM8143_Quelle_SpannungLinks(para_now)
                     HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
                 case "Spannung rechts":
-                    HM8143_Quelle_SpannungRechts(para[p_i])
+                    HM8143_Quelle_SpannungRechts(para_now)
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
                 case "Strom rechts":
-                    # HM8143_Quelle_StromBegrenzRechtsCC(para[p_i])
+                    # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    # HM8143_Quelle_StromBegrenzLinksCC(para[p_i])
+                    regulate_current(target_current=para_now)
+                    # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
             match Combo_Variable.get():
@@ -768,6 +772,14 @@ def Messung():
                     HM8150_Freq_Frequenz(start_schritt_ziel[x_i,])
                     HM8150_Freq_OutputOn()
 
+            match Combo_Parameter.get():
+                # case "Strom rechts":
+                    # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
+                    # HM8143_Quelle_AusgangOn()
+                case "Strom links":
+                    regulate_current(target_current=para_now)
+                    # HM8143_Quelle_StromBegrenzLinksCC(para_now)
+                    # HM8143_Quelle_AusgangOn()
             sleep(0.3)
 
             # Speichere Daten und aktualisiere Plot
@@ -786,7 +798,7 @@ def Messung():
             print("   Strom: " + str(HM8143_Quelle_ZeigeStromLinks()) + "        Strom:" + str(HM8143_Quelle_ZeigeStromRechts()))
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
-            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i]))  # Tabelle zum Testen
+            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para_now))  # Tabelle zum Testen
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
