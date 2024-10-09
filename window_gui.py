@@ -839,6 +839,7 @@ fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k 
 
 # ###############################################################################################################################################
 
+
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
 master.geometry("1500x560")
