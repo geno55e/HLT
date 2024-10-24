@@ -630,57 +630,76 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_voltage=10, min_voltage=0.0, step_size=0.1):
+def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, max_interations=20, tolerance=0.0005, max_voltage=10,
+                     min_voltage=0.0):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
 
     :param target_current: Der gewünschte Strom in A.
     :param start_voltage: Die Anfangsspannung für die Regelung.
+    :param step_size: Schrittweite, um die Spannung anzupassen.
+    :param max_interations: Maximale Anzahl an Regelversuchen.
     :param tolerance: Die zulässige Abweichung vom Zielstrom (±0.001 A).
     :param max_voltage: Maximale Spannung, die eingestellt werden kann.
     :param min_voltage: Minimale Spannung, die eingestellt werden kann.
-    :param step_size: Schrittweite, um die Spannung anzupassen.
+
     """
+
     def get_current():
         # Liest den aktuellen Strom und gibt ihn als float zurück
         current_str = HM8143_Quelle_ZeigeStromLinks()
         return float(current_str.replace("A", ""))
 
-    HM8143_Quelle_remoteOn()
-    HM8143_Quelle_StromBegrenzLinks(float(target_current))   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
-    # HM8143_Quelle_StromBegrenzLinks(float(target_current)+0.001)   # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung
+    HM8143_Quelle_StromBegrenzLinks(
+        target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
     HM8143_Quelle_AusgangOn()
-    sleep(0.4)
+    sleep(0.5)
 
     # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
     current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
+
+    current = get_current()
+    error = round((target_current - current), 3)
+    if abs(error) <= tolerance:  # Wenn Strom bereits innerhalb der Tolleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue EInstellung)
+        return None
 
     # Starte die Regelung der Spannung
     # if status == "CC1":     # Prüfe ob Ausgang links in Strombegrenzung ist
     #     current_voltage = float(HM8143_Quelle_ZeigeSpannungLinks())
 
-    HM8143_Quelle_SpannungLinks(current_voltage)    # Setze linke Quelle auf die Start-Spannung
-
+    HM8143_Quelle_SpannungLinks(current_voltage)  # Setze linke Quelle auf die Start-Spannung
+    interations = 0
+    sleep(0.5)
     while True:
         current = get_current()
-        error = round((float(target_current) - current),3)
+        error = round((target_current - current), 3)
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
-        if abs(error) < tolerance:
-            current_voltage += step_size    # Beim erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
-            HM8143_Quelle_SpannungLinks(current_voltage)
-            print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
+        if abs(error) <= tolerance or interations == max_interations:
+            # current_voltage += step_size    # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
+            # HM8143_Quelle_SpannungLinks(current_voltage)
+            # print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
             break
-        else:
+        # else:
+        #     # Strom zu niedrig → Spannung erhöhen
+        #     current_voltage += step_size
+
+        elif current < target_current:
             # Strom zu niedrig → Spannung erhöhen
             current_voltage += step_size
+            interations += 1
+
+        elif current > target_current:
+            # Strom zu hoch → Spannung erhöhen
+            current_voltage -= step_size
+            interations += 1
 
         # Stellt sicher, dass der Wert von current_voltage immer im Bereich von min_voltage bis max_voltage liegt (optional)
         current_voltage = max(min_voltage, min(current_voltage, max_voltage))
 
         # Spannung einstellen
         HM8143_Quelle_SpannungLinks(current_voltage)
-        sleep(0.5)
+        sleep(1)
 
         # Optionale Ausgabe zur Überwachung
         print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
@@ -691,7 +710,6 @@ def regulate_current(target_current, start_voltage=0.0, tolerance=0.001, max_vol
 
 def Messung():
 
-    Widgets_sperren()
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
@@ -729,8 +747,6 @@ def Messung():
             else:
                 headers = [Combo_Messgroesse_Fluke.get() + ", Parameter " + str(i) + "A" for i in para]
 
-    Create_table(headers, list(start_schritt_ziel))
-
     messdaten = np.transpose(start_schritt_ziel)
 
     p_i = 0
@@ -755,7 +771,7 @@ def Messung():
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    regulate_current(target_current=para_now)
+                    regulate_current(target_current=float(para_now))
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
@@ -768,19 +784,16 @@ def Messung():
                     HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
-                case "Frequenz":
-                    HM8150_Freq_Frequenz(start_schritt_ziel[x_i,])
-                    HM8150_Freq_OutputOn()
-
             match Combo_Parameter.get():
+
                 # case "Strom rechts":
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     # HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    regulate_current(target_current=para_now)
+                    regulate_current(target_current=float(para_now))
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     # HM8143_Quelle_AusgangOn()
-            sleep(0.3)
+            # sleep(0.3)
 
             # Speichere Daten und aktualisiere Plot
             ax.clear()
@@ -789,16 +802,12 @@ def Messung():
                 ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.')
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
-
+            sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
-            # wert_gemessen = Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para[p_i])  # Messe zum Testen
-            print(str(progress + 1) + "/" + str(messwerte_insgesamt) + "      VAR: " + str(x_i) + "     FLUKE: " + str(wert_gemessen))
-            print("Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "  Spannung: " + str(HM8143_Quelle_ZeigeSpannungRechts()))
-            print("   Strom: " + str(HM8143_Quelle_ZeigeStromLinks()) + "        Strom:" + str(HM8143_Quelle_ZeigeStromRechts()))
+            print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") | VAR: " + str(round(start_schritt_ziel[x_i,],3)) + " | FLUKE: " + str(wert_gemessen) + " | U1: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V   I1: "+ str(HM8143_Quelle_ZeigeStromLinks()) +" | U2: " + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V   I2: "+str(HM8143_Quelle_ZeigeStromRechts()))
+            print("------------------------------------------------------------------------------------")
             mess_y.append(wert_gemessen)
-            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
-            # Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=Fluke_Messe_Wert_test(start_schritt_ziel[x_i,], para_now))  # Tabelle zum Testen
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
@@ -816,9 +825,6 @@ def Messung():
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     HM8143_Quelle_AusgangOff()
-    HM8150_Freq_OutputOff()
-    Widgets_entsperren()
-
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------
 headers = 0
