@@ -13,6 +13,10 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 
 # HM8143 Spannungsquelle
 def HM8143_Quelle_remoteOn():
+    """
+    Einschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente werden gesperrt. Eine Bedienung des Netzgeräts kann jetzt
+    nur noch mit dem Interface erfolgen.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM1')
@@ -20,6 +24,9 @@ def HM8143_Quelle_remoteOn():
 
 
 def HM8143_Quelle_remoteOff():
+    """
+    Ausschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente sind entsperrt.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
@@ -27,6 +34,10 @@ def HM8143_Quelle_remoteOff():
 
 
 def HM8143_Quelle_SpannungLinks(spannung):
+    """
+    Setze Spannung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
+    :param spannung: Spannung in [V] die eingestellt werden soll.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     # print('SU1:' + str(spannung))
@@ -35,6 +46,10 @@ def HM8143_Quelle_SpannungLinks(spannung):
 
 
 def HM8143_Quelle_SpannungRechts(spannung):
+    """
+    Setze Spannung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
+    :param spannung: Spannung in [V] die eingestellt werden soll.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     # print('SU2:' + str(spannung))
@@ -43,6 +58,10 @@ def HM8143_Quelle_SpannungRechts(spannung):
 
 
 def HM8143_Quelle_StromBegrenzLinks(strom):
+    """
+    Setze Strombegrenzung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
+    :param strom: Strom in [A] die eingestellt werden soll.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('SI1:' + str(strom))
@@ -50,6 +69,10 @@ def HM8143_Quelle_StromBegrenzLinks(strom):
 
 
 def HM8143_Quelle_StromBegrenzRechts(strom):
+    """
+    Setze Strombegrenzung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
+    :param strom: Strom in [A] die eingestellt werden soll.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('SI2:' + str(strom))
@@ -57,6 +80,9 @@ def HM8143_Quelle_StromBegrenzRechts(strom):
 
 
 def HM8143_Quelle_AusgangOn():
+    """
+    Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden eingeschaltet.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OP1')
@@ -64,6 +90,9 @@ def HM8143_Quelle_AusgangOn():
 
 
 def HM8143_Quelle_AusgangOff():
+    """
+    Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden ausgeschaltet.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
@@ -80,6 +109,11 @@ def HM8143_Quelle_Toggle_Ausgang():
 
 
 def HM8143_Quelle_ZeigeStromLinks():
+    """
+    Gebe die Stromwerte zurück (String 0.000A), entsprechend der bei der letzten Messung gemessenen Istwerten des entnommenen Stromes von Ausgang 1
+    (links).
+    :return: String 0.000A
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_links = my_instrument.query('MI1')
@@ -88,6 +122,11 @@ def HM8143_Quelle_ZeigeStromLinks():
 
 
 def HM8143_Quelle_ZeigeStromRechts():
+    """
+    Gebe die Stromwerte zurück (String 0.000A), entsprechend der bei der letzten Messung gemessenen Istwerten des entnommenen Stromes von Ausgang 2
+    (rechts).
+    :return: String 0.000A
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_rechts = my_instrument.query('MI2')
@@ -96,6 +135,11 @@ def HM8143_Quelle_ZeigeStromRechts():
 
 
 def HM8143_Quelle_ZeigeSpannungLinks():
+    """
+    Gebe den Spannungswert (float 0.00) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 1 (links) anstehenden Spannungen
+    zurück.
+    :return: float 0.00
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('MU1')
@@ -104,6 +148,11 @@ def HM8143_Quelle_ZeigeSpannungLinks():
 
 
 def HM8143_Quelle_ZeigeSpannungRechts():
+    """
+    Gebe den Spannungswert (float 0.00) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 2 (rechts) anstehenden Spannungen
+    zurück.
+    :return: float 0.00
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('MU2')
@@ -112,6 +161,10 @@ def HM8143_Quelle_ZeigeSpannungRechts():
 
 
 def HM8143_Quelle_Status():
+    """
+    Gibt einen String zurück (OP1/0 CV1/CC1 CV2/CC2 RM0/1), der Auskunft über den momentanen Gerätestatus gibt.
+    :return: OP1/0 CV1/CC1 CV2/CC2 RM0/1
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     status = my_instrument.query('STA?')
@@ -129,6 +182,10 @@ def HM8143_Quelle_Status():
 # 5. Ausgang ein/ausschalten (OT1 ; OT0)
 
 def HM8150_Freq_remoteOff():
+    """
+    Ausschalten des Remote-Zustandes von des HAMEG Funktionsgenerators. Die Frontbedienelemente werden entsperrt. Eine Bedienung des Netzgeräts kann
+    jetzt mit dem Interface erfolgen.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
@@ -136,6 +193,10 @@ def HM8150_Freq_remoteOff():
 
 
 def HM8150_Freq_Wellenform(wellenform):
+    """
+    Einstellen der Signalform des Ausgangssignals
+    :param wellenform: SIN: Sinus, TRI: Dreieck, PLS: Impuls, RMP: Sägezahn (positiv), RMN Sägezahn (negativ), ARB: Arbitary
+    """
     print("Wellenform ausgewählt: " + wellenform)
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
@@ -164,6 +225,9 @@ def HM8150_Freq_Wellenform(wellenform):
 
 
 def HM8150_Freq_OffsetOn():
+    """
+    Einschalten der Offsetspannung
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OF1')
@@ -171,6 +235,9 @@ def HM8150_Freq_OffsetOn():
 
 
 def HM8150_Freq_OffsetOff():
+    """
+    Ausschalten der Offsetspannung
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OF0')
@@ -187,6 +254,9 @@ def HM8150_Freq_Toggle_Offset():
 
 
 def HM8150_Freq_OutputOn():
+    """
+    Einschalten des Ausgangssignals
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OT1')
@@ -194,6 +264,9 @@ def HM8150_Freq_OutputOn():
 
 
 def HM8150_Freq_OutputOff():
+    """
+    Ausschalten des Ausgangssignals.
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OT0')
@@ -210,6 +283,10 @@ def HM8150_Freq_Toggle_Output():
 
 
 def HM8150_Freq_Amplitude(amplitude):
+    """
+    Setze die Amplitude auf den angegebenen Wert
+    :param amplitude: Amplitude 00.00 in [V]
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('AMP:' + str(amplitude))
@@ -218,6 +295,10 @@ def HM8150_Freq_Amplitude(amplitude):
 
 
 def HM8150_Freq_Frequenz(frequenz):
+    """
+    Setze die Frequenz auf den angegebenen Wert
+    :param frequenz: Frequenz 0.0000 in [kHz]
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('FRQ:' + str(frequenz))
@@ -226,6 +307,10 @@ def HM8150_Freq_Frequenz(frequenz):
 
 
 def HM8150_Freq_Offset(offset):
+    """
+    Setze Offset
+    :param offset: Offset in [V]
+    """
     rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OFS:' + str(offset))
@@ -704,9 +789,6 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, m
         # Optionale Ausgabe zur Überwachung
         print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
-    # HM8143_Quelle_AusgangOff()
-    # HM8143_Quelle_remoteOff()
-
 
 def Messung():
 
@@ -757,6 +839,13 @@ def Messung():
         mess_y = []
         x_i = 0
         para_now = para[p_i]
+
+        # Anzeigen von der HAMEG-Spannungsquelle zum debuggen
+        u1 = []
+        i1 = []
+        u2 = []
+        i2 = []
+
         if Combo_Parameter_Einteilung.get() != "ohne Parameter":
             match Combo_Parameter.get():
                 case "Spannung links":
@@ -805,8 +894,15 @@ def Messung():
             sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
+            # Zum debuggen
+            u1.append(HM8143_Quelle_ZeigeSpannungLinks())
+            i1.append(HM8143_Quelle_ZeigeStromLinks())
+            u2.append(HM8143_Quelle_ZeigeSpannungRechts())
+            i2.append(HM8143_Quelle_ZeigeStromRechts())
+
             print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") | VAR: " + str(round(start_schritt_ziel[x_i,],3)) + " | FLUKE: " + str(wert_gemessen) + " | U1: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V   I1: "+ str(HM8143_Quelle_ZeigeStromLinks()) +" | U2: " + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V   I2: "+str(HM8143_Quelle_ZeigeStromRechts()))
             print("------------------------------------------------------------------------------------")
+
             mess_y.append(wert_gemessen)
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
@@ -818,8 +914,23 @@ def Messung():
             progressbar['value'] = progress  # Progress um eins erweitern
 
         if not messungStop:
+
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
+
+            # Zum debuggen
+            headers_debug = ['Variable', 'Fluke ' + Combo_Messgroesse_Fluke.get(), 'U1', 'I1', 'U2', 'I2']
+            messdaten_debug = np.transpose(start_schritt_ziel)
+            messdaten_debug = np.vstack((messdaten_debug, mess_y))
+            messdaten_debug = np.vstack((messdaten_debug, u1))
+            messdaten_debug = np.vstack((messdaten_debug, i1))
+            messdaten_debug = np.vstack((messdaten_debug, u2))
+            messdaten_debug = np.vstack((messdaten_debug, i2))
+            messdaten_debug_transp = np.transpose(messdaten)
+            debug_name_path = f"{para_now}.txt"
+            np.savetxt(debug_name_path, messdaten_debug_transp, fmt='%s', delimiter=' ', header=str(headers_debug), comments='')
+            print(f"Numpy-Matrix wurde als {para_now} gespeichert.")
+
 
     ax.legend(headers)
     canvas.draw()
