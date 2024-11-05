@@ -371,12 +371,12 @@ def ConvertMessbereichToDecimalString():
 
 def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
     match messgroesse_eingestellt:
-        case "Gleichspannung" | "Wechselspannung":
+        case "DC V" | "AC V":
             print("Spannung")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Spannung
             Combo_Messbereich_Fluke.current(0)
             fluke_Einheit = "V"
-        case "Gleichstrom" | "Wechselstrom":
+        case "DC I" | "AC I":
             print("Strom")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Strom
             Combo_Messbereich_Fluke.current(0)
