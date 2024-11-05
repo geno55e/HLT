@@ -7,7 +7,6 @@ from tkinter import ttk
 from time import sleep
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-
 # from MOSFET import simulate_mosfet_current
 
 
@@ -476,13 +475,13 @@ def Aktualisiere_Widgets_Parameter(parameter_einteilung):
 
 def ConvertMessgroesseToSCPI():
     match Combo_Messgroesse_Fluke.get():
-        case "Gleichspannung":
+        case "DC V":
             return "CONF:VOLT:DC "
-        case "Wechselspannung":
+        case "AC V":
             return "CONF:VOLT:AC "
-        case "Gleichstrom":
+        case "DC I":
             return "CONF:CURR:DC "
-        case "Wechselstrom":
+        case "AC I":
             return "CONF:CURR:AC "
         case "Widerstand":
             return "CONF:RES "
@@ -490,13 +489,13 @@ def ConvertMessgroesseToSCPI():
 
 def setIntegrationTime():
     match Combo_Messgroesse_Fluke.get():
-        case "Gleichspannung":
+        case "DC V":
             return ":volt:dc:nplc 1"
-        case "Wechselspannung":
+        case "AC V":
             return ":volt:ac:band 200"
-        case "Gleichstrom":
+        case "DC I":
             return ":curr:dc:nplc 1"
-        case "Wechselstrom":
+        case "AC I":
             return ":curr:ac:band 200"
         case "Widerstand":
             return ":res:nplc 1"
@@ -715,7 +714,7 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, max_interations=20, tolerance=0.0005, max_voltage=10,
+def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, max_interations=30, tolerance=0.0005, max_voltage=10,
                      min_voltage=0.0):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
@@ -738,7 +737,7 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, m
     HM8143_Quelle_StromBegrenzLinks(
         target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
     HM8143_Quelle_AusgangOn()
-    sleep(0.5)
+    sleep(0.3)
 
     # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
     current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
@@ -754,7 +753,7 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, m
 
     HM8143_Quelle_SpannungLinks(current_voltage)  # Setze linke Quelle auf die Start-Spannung
     interations = 0
-    sleep(0.5)
+    sleep(0.3)
     while True:
         current = get_current()
         error = round((target_current - current), 3)
@@ -784,7 +783,7 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.01, m
 
         # Spannung einstellen
         HM8143_Quelle_SpannungLinks(current_voltage)
-        sleep(1)
+        sleep(0.8)
 
         # Optionale Ausgabe zur Überwachung
         print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
@@ -800,6 +799,7 @@ def Messung():
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
+    start_schritt_ziel = np.round(start_schritt_ziel, decimals=2)
 
     global var_x
     global mess_y
@@ -860,6 +860,8 @@ def Messung():
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
+                    HM8143_Quelle_SpannungLinks(0)  # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
+                    HM8143_Quelle_SpannungRechts(0) # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
                     regulate_current(target_current=float(para_now))
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
@@ -926,7 +928,7 @@ def Messung():
             messdaten_debug = np.vstack((messdaten_debug, i1))
             messdaten_debug = np.vstack((messdaten_debug, u2))
             messdaten_debug = np.vstack((messdaten_debug, i2))
-            messdaten_debug_transp = np.transpose(messdaten)
+            messdaten_debug_transp = np.transpose(messdaten_debug)
             debug_name_path = f"{para_now}.txt"
             np.savetxt(debug_name_path, messdaten_debug_transp, fmt='%s', delimiter=' ', header=str(headers_debug), comments='')
             print(f"Numpy-Matrix wurde als {para_now} gespeichert.")
@@ -1001,11 +1003,11 @@ Label_Strom_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom lin
 Label_Strom_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom rechts")
 
 Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.095")
+Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", command=HM8143_Quelle_Toggle_Ausgang)
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "0.095")
+Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "0.9")
 Eingabe_Strom_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
 
 # HM8143 Design
@@ -1083,17 +1085,17 @@ Label_Messbereich_Fluke = ttk.Label(Frame_Fluke, text="Messbereich")
 Combo_Messgroesse_Fluke = ttk.Combobox(
     Frame_Fluke,
     state="readonly",
-    values=["Gleichspannung", "Wechselspannung", "Gleichstrom", "Wechselstrom", "Widerstand"],
+    values=["DC V", "AC V", "DC I", "AC I", "Widerstand"],
     width=18
 )
-Combo_Messgroesse_Fluke.current(0)
+Combo_Messgroesse_Fluke.current(2)
 
 Combo_Messgroesse_Fluke.bind("<<ComboboxSelected>>", (lambda event: Fluke_bestimme_Messbereich(Combo_Messgroesse_Fluke.get())))
 
 Combo_Messbereich_Fluke = ttk.Combobox(
     Frame_Fluke,
     state="readonly",
-    values=fluke_Messbereich_Spannung,
+    values=fluke_Messbereich_Strom,
     width=10
 )
 
@@ -1139,7 +1141,7 @@ Combo_Parameter = ttk.Combobox(
     values=["Spannung links", "Spannung rechts", "Strom links", "Strom rechts"],
     width=15
 )
-Combo_Parameter.current(0)
+Combo_Parameter.current(2)
 
 Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
 
@@ -1149,7 +1151,7 @@ Combo_Parameter_Einteilung = ttk.Combobox(
     values=["linear", "quadratisch", "exponentiell", "manuell", "ohne Parameter"],
     width=15
 )
-Combo_Parameter_Einteilung.current(1)
+Combo_Parameter_Einteilung.current(3)
 
 Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter(Combo_Parameter_Einteilung.get())))
 
