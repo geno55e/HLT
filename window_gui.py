@@ -801,8 +801,6 @@ def Messung():
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
     start_schritt_ziel = np.round(start_schritt_ziel, decimals=2)
 
-
-
     global var_x
     global mess_y
     global x_i
@@ -906,7 +904,7 @@ def Messung():
             u2.append(HM8143_Quelle_ZeigeSpannungRechts())
             i2.append(HM8143_Quelle_ZeigeStromRechts())
 
-            print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") | VAR: " + str(round(start_schritt_ziel[x_i,],3)) + " | FLUKE: " + str(wert_gemessen) + " | U1: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V   I1: "+ str(HM8143_Quelle_ZeigeStromLinks()) +" | U2: " + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V   I2: "+str(HM8143_Quelle_ZeigeStromRechts()))
+            print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") | VAR: " + str(start_schritt_ziel[x_i,]) + " | FLUKE: " + str(wert_gemessen) + " | U1: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V   I1: "+ str(HM8143_Quelle_ZeigeStromLinks()) +" | U2: " + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V   I2: "+str(HM8143_Quelle_ZeigeStromRechts()))
             print("------------------------------------------------------------------------------------")
 
             mess_y.append(wert_gemessen)
