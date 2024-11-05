@@ -801,6 +801,8 @@ def Messung():
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
     start_schritt_ziel = np.round(start_schritt_ziel, decimals=2)
 
+
+
     global var_x
     global mess_y
     global x_i
@@ -828,6 +830,8 @@ def Messung():
                 headers = [Combo_Messgroesse_Fluke.get()]
             else:
                 headers = [Combo_Messgroesse_Fluke.get() + ", Parameter " + str(i) + "A" for i in para]
+
+    Create_table(headers, list(start_schritt_ziel))
 
     messdaten = np.transpose(start_schritt_ziel)
 
@@ -906,6 +910,7 @@ def Messung():
             print("------------------------------------------------------------------------------------")
 
             mess_y.append(wert_gemessen)
+            Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
             ax.plot(var_x, mess_y, '--.')
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
@@ -1213,7 +1218,7 @@ progressbar.pack(fill='x', expand=True)
 toolbar = NavigationToolbar2Tk(canvas, Frame_Plot)
 
 
-Fluke_set_Range()
+# Fluke_set_Range()
 
 
 # Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
