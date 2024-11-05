@@ -714,7 +714,7 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, max_interations=30, tolerance=0.0005, max_voltage=10,
+def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, max_iterations=30, tolerance=0.0005, max_voltage=10,
                      min_voltage=0.0):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
@@ -722,7 +722,7 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
     :param target_current: Der gewünschte Strom in A.
     :param start_voltage: Die Anfangsspannung für die Regelung.
     :param step_size: Schrittweite, um die Spannung anzupassen.
-    :param max_interations: Maximale Anzahl an Regelversuchen.
+    :param max_iterations: Maximale Anzahl an Regelversuchen.
     :param tolerance: Die zulässige Abweichung vom Zielstrom (±0.001 A).
     :param max_voltage: Maximale Spannung, die eingestellt werden kann.
     :param min_voltage: Minimale Spannung, die eingestellt werden kann.
@@ -752,15 +752,15 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
     #     current_voltage = float(HM8143_Quelle_ZeigeSpannungLinks())
 
     HM8143_Quelle_SpannungLinks(current_voltage)  # Setze linke Quelle auf die Start-Spannung
-    interations = 0
+    iterations = 0
     sleep(0.3)
     while True:
         current = get_current()
         error = round((target_current - current), 3)
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
-        if abs(error) <= tolerance or interations == max_interations:
-            # current_voltage += step_size    # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
+        if abs(error) <= tolerance or iterations == max_iterations:
+            # current_voltage += step_size # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
             # HM8143_Quelle_SpannungLinks(current_voltage)
             # print("Strom stabil bei "+HM8143_Quelle_ZeigeStromLinks()+" mit Spannung "+ str(HM8143_Quelle_ZeigeSpannungLinks()))
             break
@@ -771,12 +771,12 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
         elif current < target_current:
             # Strom zu niedrig → Spannung erhöhen
             current_voltage += step_size
-            interations += 1
+            iterations += 1
 
         elif current > target_current:
             # Strom zu hoch → Spannung erhöhen
             current_voltage -= step_size
-            interations += 1
+            iterations += 1
 
         # Stellt sicher, dass der Wert von current_voltage immer im Bereich von min_voltage bis max_voltage liegt (optional)
         current_voltage = max(min_voltage, min(current_voltage, max_voltage))
