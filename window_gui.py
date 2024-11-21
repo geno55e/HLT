@@ -126,31 +126,31 @@ def HM8143_Quelle_ZeigeStromLinks():
     """
     Gebe die Stromwerte zurück (String 0.000A), entsprechend der bei der letzten Messung gemessenen Istwerten des entnommenen Stromes von Ausgang 1
     (links).
-    :return: String 0.000A
+    :return: String 0.000
     """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_links = my_instrument.query('MI1')
     my_instrument.close()
-    return strom_links.replace("I1:+", "")
+    return strom_links[4:-1]
 
 
 def HM8143_Quelle_ZeigeStromRechts():
     """
     Gebe die Stromwerte zurück (String 0.000A), entsprechend der bei der letzten Messung gemessenen Istwerten des entnommenen Stromes von Ausgang 2
     (rechts).
-    :return: String 0.000A
+    :return: String 0.000
     """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_rechts = my_instrument.query('MI2')
     my_instrument.close()
-    return strom_rechts.replace("I2:+", "")
+    return strom_rechts[4:-1]
 
 
 def HM8143_Quelle_ZeigeSpannungLinks():
     """
-    Gebe den Spannungswert (float 0.00) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 1 (links) anstehenden Spannungen
+    Gebe den Spannungswert (gemessen) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 1 (links) anstehenden Spannungen
     zurück.
     :return: float 0.00
     """
@@ -163,13 +163,36 @@ def HM8143_Quelle_ZeigeSpannungLinks():
 
 def HM8143_Quelle_ZeigeSpannungRechts():
     """
-    Gebe den Spannungswert (float 0.00) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 2 (rechts) anstehenden Spannungen
+    Gebe den Spannungswert (gemessen) entsprechend der bei der letzten Messung gemessenen Istwerten am Ausgang 2 (rechts) anstehenden Spannungen
     zurück.
     :return: float 0.00
     """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('MU2')
+    my_instrument.close()
+    return float(spannung_rechts[3:8])
+
+def HM8143_Quelle_ZeigeSpannungLinksGesetzt():
+    """
+    Gebe den Soll-Spannungswert (eingestellt) am Ausgang 1 (links) zurück.
+    :return: float 0.00
+    """
+    rm = VISAtestMode.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    spannung_links = my_instrument.query('RU1')
+    my_instrument.close()
+    return float(spannung_links[3:8])
+
+
+def HM8143_Quelle_ZeigeSpannungRechtsGesetzt():
+    """
+    Gebe den Soll-Spannungswert (eingestellt) am Ausgang 2 (rechts) zurück.
+    :return: float 0.00
+    """
+    rm = VISAtestMode.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    spannung_rechts = my_instrument.query('RU2')
     my_instrument.close()
     return float(spannung_rechts[3:8])
 
@@ -730,12 +753,13 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, max_iterations=30, tolerance=0.0005, max_voltage=10,
-                     min_voltage=0.0):
+def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=0.05, max_iterations=30, tolerance=0.0005, max_voltage=10,
+                     min_voltage=0.0, ):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
 
     :param target_current: Der gewünschte Strom in A.
+    :param var_i: Aktueller Var-Schritt (nur beim ersten Var wird Strombegrenzung gesetzt)
     :param start_voltage: Die Anfangsspannung für die Regelung.
     :param step_size: Schrittweite, um die Spannung anzupassen.
     :param max_iterations: Maximale Anzahl an Regelversuchen.
@@ -748,15 +772,15 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
     def get_current():
         # Liest den aktuellen Strom und gibt ihn als float zurück
         current_str = HM8143_Quelle_ZeigeStromLinks()
-        return float(current_str.replace("A", ""))
-
-    HM8143_Quelle_StromBegrenzLinks(
-        target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
-    HM8143_Quelle_AusgangOn()
-    sleep(0.3)
+        return float(current_str)
+    if var_i==0:
+        HM8143_Quelle_StromBegrenzLinks(
+            target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
+        HM8143_Quelle_AusgangOn()
+        sleep(0.3)
 
     # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
-    current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
+    current_voltage = HM8143_Quelle_ZeigeSpannungLinksGesetzt()
 
     current = get_current()
     error = round((target_current - current), 3)
@@ -766,10 +790,11 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
     # Starte die Regelung der Spannung
     # if status == "CC1":     # Prüfe ob Ausgang links in Strombegrenzung ist
     #     current_voltage = float(HM8143_Quelle_ZeigeSpannungLinks())
-
+    print("1Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
     HM8143_Quelle_SpannungLinks(current_voltage)  # Setze linke Quelle auf die Start-Spannung
     iterations = 0
     sleep(0.3)
+    print("2Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
     while True:
         current = get_current()
         error = round((target_current - current), 3)
@@ -786,13 +811,13 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
         #     current_voltage += step_size
 
         elif current < target_current:
-            print(f"Strom zu niedrig: {current} < Target {target_current} | Abweichung: {error} -> erhöhe um {step_size}")
+            # print(f"Strom zu niedrig: {current} < Target {target_current} | Abweichung: {error} -> erhöhe um {step_size}")
             # Strom zu niedrig → Spannung erhöhen
             current_voltage += step_size
             iterations += 1
 
         elif current > target_current:
-            print(f"Strom zu hoch: {current} > Target {target_current} | Abweichung: {error} -> verringere um {step_size}")
+            # print(f"Strom zu hoch: {current} > Target {target_current} | Abweichung: {error} -> verringere um {step_size}")
             # Strom zu hoch → Spannung erhöhen
             current_voltage -= step_size
             iterations += 1
@@ -802,10 +827,10 @@ def regulate_current(target_current: float, start_voltage=0.0, step_size=0.02, m
 
         # Spannung einstellen
         HM8143_Quelle_SpannungLinks(current_voltage)
-        sleep(0.8)
+        sleep(0.3)
 
         # Optionale Ausgabe zur Überwachung
-        print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + ", Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+        print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET "+ str(HM8143_Quelle_ZeigeSpannungLinksGesetzt())+"), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
 def Messung():
@@ -832,11 +857,12 @@ def Messung():
     mess_y = []
     x_i = 0
 
+
     para = Parameter_bestimmen()
 
     messwerte_insgesamt = int((ziel - start) / schritt) * len(para)
     progressbar['maximum'] = messwerte_insgesamt  # Lege das Maximum von der Progressbar fest
-    match Combo_Parameter.get():
+    match Combo_Parameter.get():    # Bestimme den Tabellenkopf
         case "Spannung links" | "Spannung rechts":
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
@@ -854,7 +880,7 @@ def Messung():
 
     p_i = 0
     progress = 0
-    sleep(0.1)
+
     while (p_i < len(para)) and (not messungStop):  # gehe Parameter durch
         var_x = []
         mess_y = []
@@ -881,11 +907,14 @@ def Messung():
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    HM8143_Quelle_SpannungLinks(0)  # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
-                    HM8143_Quelle_SpannungRechts(0) # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
-                    regulate_current(target_current=float(para_now))
+                    HM8143_Quelle_SpannungLinks(0.01)  # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
+                    HM8143_Quelle_SpannungRechts(0.01) # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
+                    regulate_current(target_current=float(para_now), var_i=x_i)
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
+
+        sleep(1)  # Wartezeit nach Setzen von Parameter
+
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
             match Combo_Variable.get():
                 case "Spannung links":
@@ -896,16 +925,20 @@ def Messung():
                     HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
+            if x_i > 0: print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") VAR:" + str(start_schritt_ziel[x_i,]) + " FLUKE:" + str(wert_gemessen) + " U1:" + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET "+ str(HM8143_Quelle_ZeigeSpannungLinksGesetzt())+") I1:"+ str(HM8143_Quelle_ZeigeStromLinks()) +"A U2:" + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:"+str(HM8143_Quelle_ZeigeStromRechts())+"A")
+            print("------------------------------------------------------------------------------------")
             match Combo_Parameter.get():
 
                 # case "Strom rechts":
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     # HM8143_Quelle_AusgangOn()
                 case "Strom links":
-                    regulate_current(target_current=float(para_now))
+
+                    regulate_current(target_current=float(para_now), var_i=x_i)
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     # HM8143_Quelle_AusgangOn()
-            # sleep(0.3)
+
+            sleep(0.05)  # Wartezeit zwischen Messungen
 
             # Speichere Daten und aktualisiere Plot
             ax.clear()
@@ -914,7 +947,7 @@ def Messung():
                 ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.', linewidth=1)
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
-            sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
+            # sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
             # Zum debuggen
@@ -923,8 +956,12 @@ def Messung():
             u2.append(HM8143_Quelle_ZeigeSpannungRechts())
             i2.append(HM8143_Quelle_ZeigeStromRechts())
 
-            print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") | VAR: " + str(start_schritt_ziel[x_i,]) + " | FLUKE: " + str(wert_gemessen) + " | U1: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V   I1: "+ str(HM8143_Quelle_ZeigeStromLinks()) +" | U2: " + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V   I2: "+str(HM8143_Quelle_ZeigeStromRechts()))
-            print("------------------------------------------------------------------------------------")
+            if x_i == 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" + str(
+                start_schritt_ziel[x_i,]) + " FLUKE:" + str(wert_gemessen) + " U1:" + str(
+                HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " + str(
+                HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" + str(
+                HM8143_Quelle_ZeigeStromLinks()) + "A U2:" + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" + str(
+                HM8143_Quelle_ZeigeStromRechts()) + "A")
 
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
@@ -1032,7 +1069,7 @@ Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", command=HM8143_Quelle_Toggle_Ausgang)
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "0.9")
+Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "1.0")
 Eingabe_Strom_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
 
 # HM8143 Design
@@ -1166,7 +1203,7 @@ Combo_Parameter = ttk.Combobox(
     values=["Spannung links", "Spannung rechts", "Strom links", "Strom rechts"],
     width=15
 )
-Combo_Parameter.current(0)
+Combo_Parameter.current(2)
 
 Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
 
@@ -1235,7 +1272,7 @@ Combo_DebugPlot = ttk.Combobox(
     values=["U1", "I1", "U2", "I2", "none"],
     width=5
 )
-Combo_DebugPlot.current(0)
+Combo_DebugPlot.current(4)
 Combo_DebugPlot.grid(column=3, row=6, padx=5, pady=3)
 
 #   ##########################################
