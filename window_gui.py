@@ -1,12 +1,13 @@
 from tkinter import filedialog
 import matplotlib.pyplot as plt
-import VISAtestMode
+import pyvisa
 import tkinter as tk
 import numpy as np
 from tkinter import ttk
 from time import sleep
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from datetime import datetime
+
 
 # from MOSFET import simulate_mosfet_current
 
@@ -23,15 +24,13 @@ def DebugPlot(var_x, u1=None, u2=None, i1=None, i2=None):
             ax.plot(var_x, i2, ':', linewidth=1)
 
 
-
-
 # HM8143 Spannungsquelle
 def HM8143_Quelle_remoteOn():
     """
     Einschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente werden gesperrt. Eine Bedienung des Netzgeräts kann jetzt
     nur noch mit dem Interface erfolgen.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM1')
     my_instrument.close()
@@ -41,7 +40,7 @@ def HM8143_Quelle_remoteOff():
     """
     Ausschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente sind entsperrt.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
     my_instrument.close()
@@ -52,7 +51,7 @@ def HM8143_Quelle_SpannungLinks(spannung):
     Setze Spannung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
     :param spannung: Spannung in [V] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     # print('SU1:' + str(spannung))
     my_instrument.write('SU1:' + str(spannung))
@@ -64,7 +63,7 @@ def HM8143_Quelle_SpannungRechts(spannung):
     Setze Spannung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
     :param spannung: Spannung in [V] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     # print('SU2:' + str(spannung))
     my_instrument.write('SU2:' + str(spannung))
@@ -76,7 +75,7 @@ def HM8143_Quelle_StromBegrenzLinks(strom):
     Setze Strombegrenzung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
     :param strom: Strom in [A] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('SI1:' + str(strom))
     my_instrument.close()
@@ -87,7 +86,7 @@ def HM8143_Quelle_StromBegrenzRechts(strom):
     Setze Strombegrenzung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
     :param strom: Strom in [A] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('SI2:' + str(strom))
     my_instrument.close()
@@ -97,7 +96,7 @@ def HM8143_Quelle_AusgangOn():
     """
     Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden eingeschaltet.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OP1')
     my_instrument.close()
@@ -107,7 +106,7 @@ def HM8143_Quelle_AusgangOff():
     """
     Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden ausgeschaltet.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
     my_instrument.close()
@@ -128,7 +127,7 @@ def HM8143_Quelle_ZeigeStromLinks():
     (links).
     :return: String 0.000
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_links = my_instrument.query('MI1')
     my_instrument.close()
@@ -141,7 +140,7 @@ def HM8143_Quelle_ZeigeStromRechts():
     (rechts).
     :return: String 0.000
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     strom_rechts = my_instrument.query('MI2')
     my_instrument.close()
@@ -154,7 +153,7 @@ def HM8143_Quelle_ZeigeSpannungLinks():
     zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('MU1')
     my_instrument.close()
@@ -167,18 +166,19 @@ def HM8143_Quelle_ZeigeSpannungRechts():
     zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('MU2')
     my_instrument.close()
     return float(spannung_rechts[3:8])
+
 
 def HM8143_Quelle_ZeigeSpannungLinksGesetzt():
     """
     Gebe den Soll-Spannungswert (eingestellt) am Ausgang 1 (links) zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('RU1')
     my_instrument.close()
@@ -190,7 +190,7 @@ def HM8143_Quelle_ZeigeSpannungRechtsGesetzt():
     Gebe den Soll-Spannungswert (eingestellt) am Ausgang 2 (rechts) zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('RU2')
     my_instrument.close()
@@ -202,11 +202,31 @@ def HM8143_Quelle_Status():
     Gibt einen String zurück (OP1/0 CV1/CC1 CV2/CC2 RM0/1), der Auskunft über den momentanen Gerätestatus gibt.
     :return: OP1/0 CV1/CC1 CV2/CC2 RM0/1
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
     status = my_instrument.query('STA?')
     my_instrument.close()
     return status
+
+
+def HM8143_IstAusgangInCC(ausgang):
+    """
+    Gebe einen True zurück wenn der übergebene Ausgang sich im Konstantstrombetrieb (CC) befindet, sonst false
+    :param ausgang: Der Ausgang welcher abgefragt werden soll: links = 1 oder rechts = 2.
+    :return: bool
+    """
+    rm = pyvisa.ResourceManager()
+    my_instrument = rm.open_resource('ASRL6::INSTR', write_termination='\r', read_termination='\r')
+    status_powersup = my_instrument.query('STA')
+
+    my_instrument.write('RM0')
+    my_instrument.close()
+    if ausgang == 1 and status_powersup[4:-8] == "CC1":
+        return True
+    elif ausgang == 2 and status_powersup[8:-4] == "CC2":
+        return True
+    else:
+        return False
 
 
 # HM8150 Funktionsgenerator
@@ -223,7 +243,7 @@ def HM8150_Freq_remoteOff():
     Ausschalten des Remote-Zustandes von des HAMEG Funktionsgenerators. Die Frontbedienelemente werden entsperrt. Eine Bedienung des Netzgeräts kann
     jetzt mit dem Interface erfolgen.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
     my_instrument.close()
@@ -235,7 +255,7 @@ def HM8150_Freq_Wellenform(wellenform):
     :param wellenform: SIN: Sinus, TRI: Dreieck, PLS: Impuls, RMP: Sägezahn (positiv), RMN Sägezahn (negativ), ARB: Arbitary
     """
     print("Wellenform ausgewählt: " + wellenform)
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
 
@@ -265,7 +285,7 @@ def HM8150_Freq_OffsetOn():
     """
     Einschalten der Offsetspannung
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OF1')
     my_instrument.close()
@@ -275,7 +295,7 @@ def HM8150_Freq_OffsetOff():
     """
     Ausschalten der Offsetspannung
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OF0')
     my_instrument.close()
@@ -294,7 +314,7 @@ def HM8150_Freq_OutputOn():
     """
     Einschalten des Ausgangssignals
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OT1')
     my_instrument.close()
@@ -304,7 +324,7 @@ def HM8150_Freq_OutputOff():
     """
     Ausschalten des Ausgangssignals.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OT0')
     my_instrument.close()
@@ -324,7 +344,7 @@ def HM8150_Freq_Amplitude(amplitude):
     Setze die Amplitude auf den angegebenen Wert
     :param amplitude: Amplitude 00.00 in [V]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('AMP:' + str(amplitude))
     my_instrument.write('DAM')
@@ -336,7 +356,7 @@ def HM8150_Freq_Frequenz(frequenz):
     Setze die Frequenz auf den angegebenen Wert
     :param frequenz: Frequenz 0.0000 in [kHz]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('FRQ:' + str(frequenz))
     my_instrument.write('DFR')
@@ -348,7 +368,7 @@ def HM8150_Freq_Offset(offset):
     Setze Offset
     :param offset: Offset in [V]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL3::INSTR', write_termination='\r', read_termination='\r')
     my_instrument.write('OFS:' + str(offset))
     my_instrument.write('DOF')
@@ -696,7 +716,7 @@ def Save_Messdaten_to_File():
 
 
 def Fluke_reset():
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
     my_instrument.write('*RST;*CLS;syst:local')
     my_instrument.close()
@@ -731,7 +751,7 @@ def Fluke_set_Range():
     print(messgroesse + messbereich + integrationszeit + trig)
 
     # zum TESTEN auskommentiert
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
     set_range = '*RST;*CLS;' + messgroesse + str(messbereich) + ';' + integrationszeit + ';' + trig
     print(set_range)
@@ -744,7 +764,7 @@ def Fluke_set_Range():
 
 def Fluke_Messe_Wert_live():
     # zum TESTEN auskommentiert
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.3)
     gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?'))  # Wandle nach float und speichere gemessenen Wert
     my_instrument.close()
@@ -753,7 +773,7 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=0.05, max_iterations=30, tolerance=0.0005, max_voltage=10,
+def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=0.05, max_iterations=30, tolerance=0.001, max_voltage=10,
                      min_voltage=0.0, ):
     """
     Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
@@ -771,36 +791,45 @@ def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=
 
     def get_current():
         # Liest den aktuellen Strom und gibt ihn als float zurück
-        current_str = HM8143_Quelle_ZeigeStromLinks()
-        return float(current_str)
-    if var_i==0:
+        current_strom = HM8143_Quelle_ZeigeStromLinks()
+        return float(current_strom)
+
+    if var_i == 0:
         HM8143_Quelle_StromBegrenzLinks(
             target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
         HM8143_Quelle_AusgangOn()
         sleep(0.3)
 
     # status = HM8143_Quelle_Status()[4:7]    # Lese Status Ausgang links aus (CC1, CV1 oder ---)
-    current_voltage = HM8143_Quelle_ZeigeSpannungLinksGesetzt()
+    current_voltage = HM8143_Quelle_ZeigeSpannungLinks()
 
     current = get_current()
     error = round((target_current - current), 3)
-    if abs(error) <= tolerance:  # Wenn Strom bereits innerhalb der Tolleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue EInstellung)
+    if not HM8143_IstAusgangInCC(ausgang=1) and abs(
+            error) <= tolerance:  # Wenn Strom bereits innerhalb der Tolleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue EInstellung)
         return None
 
     # Starte die Regelung der Spannung
     # if status == "CC1":     # Prüfe ob Ausgang links in Strombegrenzung ist
     #     current_voltage = float(HM8143_Quelle_ZeigeSpannungLinks())
-    print("1Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+    print("1Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(
+        HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
     HM8143_Quelle_SpannungLinks(current_voltage)  # Setze linke Quelle auf die Start-Spannung
     iterations = 0
     sleep(0.3)
-    print("2Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+    print("2Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(
+        HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
     while True:
         current = get_current()
         error = round((target_current - current), 3)
 
         # Wenn der Strom innerhalb der Toleranz ist, beenden, sonst Spannung anpassen basierend auf dem Fehler (P-Regler)
         if abs(error) <= tolerance or iterations == max_iterations:
+            if HM8143_IstAusgangInCC(ausgang=1):
+                print("CC 0.02 runter")
+                current_voltage -= 0.01
+                HM8143_Quelle_SpannungLinks(current_voltage)
+
             print(f"Strom {current} ~= Target {target_current}")
             # current_voltage += step_size # Beim Erreichen des Stroms noch ein Step machen um in die Strombegrenzung zu kommen
             # HM8143_Quelle_SpannungLinks(current_voltage)
@@ -830,11 +859,11 @@ def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=
         sleep(0.3)
 
         # Optionale Ausgabe zur Überwachung
-        print("Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET "+ str(HM8143_Quelle_ZeigeSpannungLinksGesetzt())+"), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
+        print("(" + str(iterations) + "/30) Aktuelle Spannung: " + str(HM8143_Quelle_ZeigeSpannungLinks()) + "(SET " + str(
+            HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
 def Messung():
-
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
@@ -857,12 +886,11 @@ def Messung():
     mess_y = []
     x_i = 0
 
-
     para = Parameter_bestimmen()
 
     messwerte_insgesamt = int((ziel - start) / schritt) * len(para)
     progressbar['maximum'] = messwerte_insgesamt  # Lege das Maximum von der Progressbar fest
-    match Combo_Parameter.get():    # Bestimme den Tabellenkopf
+    match Combo_Parameter.get():  # Bestimme den Tabellenkopf
         case "Spannung links" | "Spannung rechts":
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
@@ -908,7 +936,7 @@ def Messung():
                     HM8143_Quelle_AusgangOn()
                 case "Strom links":
                     HM8143_Quelle_SpannungLinks(0.01)  # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
-                    HM8143_Quelle_SpannungRechts(0.01) # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
+                    HM8143_Quelle_SpannungRechts(0.01)  # Zur Sicherheit da bei Stromregulierung Ausgang eingeschaltet wird
                     regulate_current(target_current=float(para_now), var_i=x_i)
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
@@ -925,18 +953,21 @@ def Messung():
                     HM8143_Quelle_SpannungRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
-            if x_i > 0: print("("+str(progress+1)+"/"+str(messwerte_insgesamt) + ") VAR:" + str(start_schritt_ziel[x_i,]) + " FLUKE:" + str(wert_gemessen) + " U1:" + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET "+ str(HM8143_Quelle_ZeigeSpannungLinksGesetzt())+") I1:"+ str(HM8143_Quelle_ZeigeStromLinks()) +"A U2:" + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:"+str(HM8143_Quelle_ZeigeStromRechts())+"A")
+            if x_i > 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" + str(start_schritt_ziel[x_i,]) + " FLUKE:" + str(
+                wert_gemessen) + " U1:" + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " + str(
+                HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" + str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" + str(
+                HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" + str(HM8143_Quelle_ZeigeStromRechts()) + "A")
             print("------------------------------------------------------------------------------------")
-            match Combo_Parameter.get():
+            if Combo_Parameter_Einteilung.get() != "ohne Parameter":
+                match Combo_Parameter.get():
 
-                # case "Strom rechts":
+                    # case "Strom rechts":
                     # HM8143_Quelle_StromBegrenzRechtsCC(para_now)
                     # HM8143_Quelle_AusgangOn()
-                case "Strom links":
-
-                    regulate_current(target_current=float(para_now), var_i=x_i)
-                    # HM8143_Quelle_StromBegrenzLinksCC(para_now)
-                    # HM8143_Quelle_AusgangOn()
+                    case "Strom links":
+                        regulate_current(target_current=float(para_now), var_i=x_i)
+                        # HM8143_Quelle_StromBegrenzLinksCC(para_now)
+                        # HM8143_Quelle_AusgangOn()
 
             sleep(0.05)  # Wartezeit zwischen Messungen
 
@@ -944,7 +975,7 @@ def Messung():
             ax.clear()
             ax.grid()
             for p_fertig in range(p_i):  # Ab den zweiten Parameter, gib die Kurven davor sofort aus
-                ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.', linewidth=1)
+                ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.', linewidth=0.4, markersize=1)
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
             # sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
@@ -965,8 +996,8 @@ def Messung():
 
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
-            ax.plot(var_x, mess_y, '--.')
-            DebugPlot(var_x, u1, u2, i1, i2)   # Zum debuggen → löschen
+            ax.plot(var_x, mess_y, marker=".", markersize=3, linewidth=1)
+            DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
             canvas.draw()
@@ -976,7 +1007,6 @@ def Messung():
             progressbar['value'] = progress  # Progress um eins erweitern
 
         if not messungStop:
-
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
 
@@ -1287,7 +1317,6 @@ progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
 toolbar = NavigationToolbar2Tk(canvas, Frame_Plot)
 
-
 Fluke_set_Range()
 
 
@@ -1303,7 +1332,7 @@ def closing_cbk():
     master.destroy()
 
 
-Aktualisiere_Widgets_Parameter(Combo_Parameter_Einteilung.get())    # Für debugging, später löschen
+Aktualisiere_Widgets_Parameter(Combo_Parameter_Einteilung.get())  # Für debugging, später löschen
 master.protocol("WM_DELETE_WINDOW", closing_cbk)
 
 master.mainloop()
