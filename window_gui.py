@@ -1,6 +1,6 @@
 from tkinter import filedialog
 import matplotlib.pyplot as plt
-import VISAtestMode
+import VISAtestMode    # test
 import tkinter as tk
 import numpy as np
 from tkinter import ttk
