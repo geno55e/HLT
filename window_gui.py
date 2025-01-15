@@ -500,8 +500,24 @@ def Widgets_entsperren():
     Button_Geraete_lokal.configure(state='normal')
 
 
-def Aktualisiere_Widgets_Parameter(parameter_einteilung):
-    match parameter_einteilung:
+def Aktualisiere_Widgets_Parameter(event=None):
+
+    selected_variable = Combo_Variable.get()
+    selected_parameter = Combo_Parameter.get()
+
+    # Update options for Combo_Parameter
+    updated_parameter_options = [item for item in parameter_options if item != selected_variable]
+    Combo_Parameter['values'] = updated_parameter_options
+    if selected_parameter not in updated_parameter_options:
+        Combo_Parameter.set('')  # Reset if current value is no longer valid
+
+    # Update options for Combo_Variable
+    updated_variable_options = [item for item in variable_options if item != selected_parameter]
+    Combo_Variable['values'] = updated_variable_options
+    if selected_variable not in updated_variable_options:
+        Combo_Variable.set('')  # Reset if current value is no longer valid
+
+    match selected_parameter:
         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
             Combo_Parameter_Einteilung.current(3)
             Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
@@ -542,6 +558,24 @@ def Aktualisiere_Widgets_Parameter_Eingabe(parameter_einteilung):
             Eingabe_Schritte_Parameter.grid_forget()
             Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
             Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
+
+
+def update_variable_options(event=None):
+    selected_variable = Combo_Variable.get()
+    selected_parameter = Combo_Parameter.get()
+
+    # Update options for Combo_Parameter
+    updated_parameter_options = [item for item in parameter_options if item != selected_variable]
+    Combo_Parameter['values'] = updated_parameter_options
+    if selected_parameter not in updated_parameter_options:
+        Combo_Parameter.set('')  # Reset if current value is no longer valid
+
+    # Update options for Combo_Variable
+    updated_variable_options = [item for item in variable_options if item != selected_parameter]
+    Combo_Variable['values'] = updated_variable_options
+    if selected_variable not in updated_variable_options:
+        Combo_Variable.set('')  # Reset if current value is no longer valid
+
 
 def ConvertMessgroesseToSCPI():
     match Combo_Messgroesse_Fluke.get():
@@ -1069,6 +1103,8 @@ window_width = 1065
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
+variable_options = ["Spannung links", "Spannung rechts", "Offset", "Frequenz"]
+parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
 
 # ###############################################################################################################################################
 
@@ -1172,6 +1208,7 @@ ToolTip(Eingabe_Amplitude_HM8150_Freq, msg="Legt die Amplitude des ausgegebenen 
                                            "Spitze-Spitze-Spannung UPP des Ausgangssignals! Die tatsächliche Amplitude ist nur halb so hoch. Wenn das"
                                            " eingestellte Signal auf den Modulationseingang des Hameg Netzteils gelegt wird, "
                                            "dürfen maximal 10 V für UPP eingestellt werden. Sonst kann es zur Beschädigung der Geräte kommen.")
+
 Eingabe_Amplitude_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())))
 Eingabe_Frequenz_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Frequenz_HM8150_Freq.insert(0, "1000")
@@ -1181,6 +1218,7 @@ ToolTip(Eingabe_Frequenz_HM8150_Freq, msg="Legt die Frequenz des Ausgangssignals
                                           "ACHTUNG: Wenn das eingestellte Signal auf den Modulationseingang des Hameg "
                                           "Netzteils gelegt wird, dürfen maximal 50 kHz eingestellt werden. Sonst kann es zur "
                                           "Beschädigung der Geräte kommen.")
+
 Eingabe_Frequenz_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())))
 Eingabe_Offset_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Offset_HM8150_Freq.insert(0, "0")
@@ -1264,15 +1302,18 @@ Label_Startwert = tk.Label(Frame_Messung, text="Startwert")
 Label_Schrittweite = tk.Label(Frame_Messung, text="Schrittweite")
 Label_Zielwert = tk.Label(Frame_Messung, text="Zielwert")
 
+
 Combo_Variable = ttk.Combobox(
     Frame_Messung,
     state="readonly",
-    values=["Spannung links", "Spannung rechts", "Offset", "Frequenz"],
+    values=variable_options,
     width=15
 )
-Combo_Variable.current(1)
+Combo_Variable.current(0)
 ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert, der in dem entsprechenden Bedienelement steht,"
                             " wird ignoriert.")
+
+Combo_Variable.bind("<<ComboboxSelected>>", update_variable_options)
 
 Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Variable.insert(0, "0")
@@ -1290,14 +1331,14 @@ Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Parameter mit ; getrennt
 Combo_Parameter = ttk.Combobox(
     Frame_Messung,
     state="readonly",
-    values=["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"],
+    values=parameter_options,
     width=15
 )
-Combo_Parameter.current(2)
+Combo_Parameter.current(4)
 ToolTip(Combo_Parameter, msg="Hier werden die Parameter angegeben, für die jeweils die Variable durchlaufen wird. "
                             "Der Wert, der in dem entsprechenden Bedienelement steht, wird ignoriert.")
 
-Combo_Parameter.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter(Combo_Parameter.get())))
+Combo_Parameter.bind("<<ComboboxSelected>>", Aktualisiere_Widgets_Parameter)
 
 Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
 
@@ -1346,9 +1387,11 @@ Eingabe_Startwert_Variable.grid(column=1, row=1, padx=5, pady=1)
 Eingabe_Schrittweite_Variable.grid(column=2, row=1, padx=5, pady=1)
 Eingabe_Zielwert_Variable.grid(column=3, row=1, padx=5, pady=1)
 
+
 Label_Auswahl_Parameter.grid(column=0, row=2, sticky="W", padx=5, pady=1)
 
 Combo_Parameter.grid(column=0, row=3, sticky="W", padx=5, pady=1)
+
 
 Label_Parameter_Einteilung.grid(column=0, row=4, sticky="W", padx=5, pady=1)
 Label_Startwert_Parameter.grid(column=1, row=4, padx=5, pady=1)
@@ -1394,7 +1437,6 @@ toolbar = NavigationToolbar2Tk(canvas, Frame_Plot)
 
 Fluke_set_Range()
 
-
 # Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
 def closing_cbk():
     HM8143_Quelle_AusgangOff()
@@ -1407,7 +1449,9 @@ def closing_cbk():
     master.destroy()
 
 
-Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())  # Für debugging, später löschen
+Aktualisiere_Widgets_Parameter()    # Damit die Widgets beim Start aktualisiert werden, sonst werden die Felder für Parametereinteilung usw. angezeigt
+# Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())  # Für debugging, später löschen
+
 master.protocol("WM_DELETE_WINDOW", closing_cbk)
 
 master.mainloop()
