@@ -8,7 +8,7 @@ from time import sleep
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from datetime import datetime
 from tktooltip import ToolTip
-
+import Validation_functions as val
 # from MOSFET import simulate_mosfet_current
 
 
@@ -1114,6 +1114,9 @@ master = tk.Tk()
 master.geometry("1500x560")
 master.title("HalbleiterLeitTechnik")
 
+vcmd_voltage = master.register(val.validation_entry_voltage)
+vcmd_current = master.register(val.validation_entry_current)
+
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master, relief='groove')
 Frame_Tabelle = ttk.Frame(master)
@@ -1143,26 +1146,26 @@ Frame_HM8143_Quelle = ttk.LabelFrame(Frame_Steuerung, text="Spannungsquelle HM81
 Label_Spannung_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spannung links")
 Label_Spannung_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spannung rechts")
 
-Eingabe_Spannung_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
+Eingabe_Spannung_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
 Eingabe_Spannung_links_HM8143_Quelle.insert(0, "0.5")
-ToolTip(Eingabe_Spannung_links_HM8143_Quelle, msg="Setzt die Ausgangsspannung des linken Ausgangs: 0 - 20 [V]")
+ToolTip(Eingabe_Spannung_links_HM8143_Quelle, msg="Setzt die Ausgangsspannung des linken Ausgangs: 0 - 30 [V]")
 Eingabe_Spannung_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())))
-Eingabe_Spannung_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
-ToolTip(Eingabe_Spannung_rechts_HM8143_Quelle, msg="Setzt die Ausgangsspannung des rechten Ausgangs: 0 - 20 [V]")
+Eingabe_Spannung_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
+ToolTip(Eingabe_Spannung_rechts_HM8143_Quelle, msg="Setzt die Ausgangsspannung des rechten Ausgangs: 0 - 30 [V]")
 Eingabe_Spannung_rechts_HM8143_Quelle.insert(0, "0.5")
 Eingabe_Spannung_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())))
 
 Label_Strom_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom links")
 Label_Strom_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom rechts")
 
-Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
+Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
 ToolTip(Eingabe_Strom_links_HM8143_Quelle, msg="Setzt die Strombegrenzung des linken Ausgangs: 0 - 2 [A] \n "
                                                "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", command=HM8143_Quelle_Toggle_Ausgang)
 ToolTip(Button_on_off_HM8143_Quelle, msg="Schaltet die Ausgänge des Netzgerätes an und aus")
-Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7)
+Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "1.0")
 ToolTip(Eingabe_Strom_rechts_HM8143_Quelle, msg="Setzt die Strombegrenzung des rechten Ausgangs: 0 - 2 [A] \n "
                                                 "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
@@ -1326,7 +1329,8 @@ Eingabe_Zielwert_Variable.insert(0, "2")
 ToolTip(Eingabe_Zielwert_Variable, msg="Hier wird der Maximalwert der Variable angegeben.\nACHTUNG: Der Zielwert muss größer als der Startwert sein.")
 
 Label_Auswahl_Parameter = tk.Label(Frame_Messung, text="Parameter")
-Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Parameter mit ; getrennt (z.B. 1;1.5;2.3)")
+Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Parameter mit ; getrennt (z.B. 1;1.5;2)")
+
 
 Combo_Parameter = ttk.Combobox(
     Frame_Messung,
@@ -1335,24 +1339,12 @@ Combo_Parameter = ttk.Combobox(
     width=15
 )
 Combo_Parameter.current(4)
-ToolTip(Combo_Parameter, msg="Hier werden die Parameter angegeben, für die jeweils die Variable durchlaufen wird. "
-                            "Der Wert, der in dem entsprechenden Bedienelement steht, wird ignoriert.")
+ToolTip(Combo_Parameter, msg="Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant), für den jeweils die Variable durchlaufen"
+                             " wird. Der Wert, der in dem entsprechenden Bedienelement steht, wird ignoriert.")
 
 Combo_Parameter.bind("<<ComboboxSelected>>", Aktualisiere_Widgets_Parameter)
 
 Label_Parameter_Einteilung = tk.Label(Frame_Messung, text="Parameter Einteilung")
-
-Combo_Parameter_Einteilung = ttk.Combobox(
-    Frame_Messung,
-    state="readonly",
-    values=["linear", "quadratisch", "exponentiell", "manuell"],
-    width=15
-)
-Combo_Parameter_Einteilung.current(3)
-ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter bestimmt, bei manuell können die gewünschten Parameter händisch mit ;"
-                                        " getrennt eingegeben werden")
-
-Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())))
 
 Label_Startwert_Parameter = tk.Label(Frame_Messung, text="Startwert")
 Label_Zielwert_Parameter = tk.Label(Frame_Messung, text="Zielwert")
@@ -1368,7 +1360,20 @@ Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schritte_Parameter.insert(0, "1")
 ToolTip(Eingabe_Schritte_Parameter, msg="Schritt")
 
+Combo_Parameter_Einteilung = ttk.Combobox(
+    Frame_Messung,
+    state="readonly",
+    values=["linear", "quadratisch", "exponentiell", "manuell"],
+    width=15
+)
+Combo_Parameter_Einteilung.current(3)
+ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter bestimmt, bei manuell können die gewünschten Parameter händisch mit ;"
+                                        " getrennt eingegeben werden")
+
+Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())))
+
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
+ToolTip(Eingabe_Parameter, msg="Hier können Parameter manuell mit einem Semikolon ; getrennt eingegeben werden z.B 1;1.5;2")
 
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung, width=6)
 Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File, width=9)
