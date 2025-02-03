@@ -689,20 +689,20 @@ def Parameter_bestimmen():
         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
             match Combo_Parameter_Einteilung.get():
                 case "linear":
-                    return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()),
+                    return np.linspace(float(Eingabe_Startwert_Parameter.get()), float(Eingabe_Zielwert_Parameter.get()),
                                        num=int(Eingabe_Schritte_Parameter.get()))
                 case "quadratisch":
-                    i_min = np.square(int(Eingabe_Startwert_Parameter.get()))
-                    i_max = np.square(int(Eingabe_Zielwert_Parameter.get()))
-                    step = Eingabe_Schritte_Parameter.get()
+                    i_min = np.square(float(Eingabe_Startwert_Parameter.get()))
+                    i_max = np.square(float(Eingabe_Zielwert_Parameter.get()))
+                    step = int(Eingabe_Schritte_Parameter.get())
                     i_vec = np.linspace(i_min, i_max, num=int(step))
                     para = np.sqrt(i_vec)
                     para = np.round(para, decimals=2)
                     return para
                 case "exponentiell":
-                    i_min = np.exp(int(Eingabe_Startwert_Parameter.get()))
-                    i_max = np.exp(int(Eingabe_Zielwert_Parameter.get()))
-                    step = Eingabe_Schritte_Parameter.get()
+                    i_min = np.exp(float(Eingabe_Startwert_Parameter.get()))
+                    i_max = np.exp(float(Eingabe_Zielwert_Parameter.get()))
+                    step = int(Eingabe_Schritte_Parameter.get())
                     i_vec = np.linspace(i_min, i_max, num=int(step))
                     para = np.log(i_vec)
                     para = np.round(para, decimals=2)
@@ -712,6 +712,34 @@ def Parameter_bestimmen():
         case "ohne Parameter":
             return [1]
 
+# Backup wegen Test ohne Umwandlung der Werte nach int um floatwerte eingeben zu können
+# def Parameter_bestimmen():
+#     match Combo_Parameter.get():
+#         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
+#             match Combo_Parameter_Einteilung.get():
+#                 case "linear":
+#                     return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()),
+#                                        num=int(Eingabe_Schritte_Parameter.get()))
+#                 case "quadratisch":
+#                     i_min = np.square(int(Eingabe_Startwert_Parameter.get()))
+#                     i_max = np.square(int(Eingabe_Zielwert_Parameter.get()))
+#                     step = Eingabe_Schritte_Parameter.get()
+#                     i_vec = np.linspace(i_min, i_max, num=int(step))
+#                     para = np.sqrt(i_vec)
+#                     para = np.round(para, decimals=2)
+#                     return para
+#                 case "exponentiell":
+#                     i_min = np.exp(int(Eingabe_Startwert_Parameter.get()))
+#                     i_max = np.exp(int(Eingabe_Zielwert_Parameter.get()))
+#                     step = Eingabe_Schritte_Parameter.get()
+#                     i_vec = np.linspace(i_min, i_max, num=int(step))
+#                     para = np.log(i_vec)
+#                     para = np.round(para, decimals=2)
+#                     return para
+#                 case "manuell":
+#                     return Eingabe_Parameter.get().split(";")
+#         case "ohne Parameter":
+#             return [1]
 
 def Create_table(headers, var):
     global Tabelle
@@ -1056,6 +1084,8 @@ def Messung():
             DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
+            ax.set_xscale('log')  # Standardmäßig lineare Skalierung
+            ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
             canvas.draw()
             master.update()
             x_i += 1
@@ -1067,20 +1097,20 @@ def Messung():
             p_i += 1
 
             # Zum debuggen
-            headers_debug = ['Variable', 'Fluke ' + Combo_Messgroesse_Fluke.get(), 'U1', 'I1', 'U2', 'I2']
-            messdaten_debug = np.transpose(start_schritt_ziel)
-            messdaten_debug = np.vstack((messdaten_debug, mess_y))
-            messdaten_debug = np.vstack((messdaten_debug, u1))
-            messdaten_debug = np.vstack((messdaten_debug, i1))
-            messdaten_debug = np.vstack((messdaten_debug, u2))
-            messdaten_debug = np.vstack((messdaten_debug, i2))
-            messdaten_debug_transp = np.transpose(messdaten_debug)
-            zeitstempel = datetime.now().strftime("%d%m%y_%H_%M_%S")
-            debug_name_path = f"{para_now}_{zeitstempel}.txt"
-            np.savetxt(debug_name_path, messdaten_debug_transp, fmt='%s', delimiter=';', header=";".join(headers_debug), comments='')
+            # headers_debug = ['Variable', 'Fluke ' + Combo_Messgroesse_Fluke.get(), 'U1', 'I1', 'U2', 'I2']
+            # messdaten_debug = np.transpose(start_schritt_ziel)
+            # messdaten_debug = np.vstack((messdaten_debug, mess_y))
+            # messdaten_debug = np.vstack((messdaten_debug, u1))
+            # messdaten_debug = np.vstack((messdaten_debug, i1))
+            # messdaten_debug = np.vstack((messdaten_debug, u2))
+            # messdaten_debug = np.vstack((messdaten_debug, i2))
+            # messdaten_debug_transp = np.transpose(messdaten_debug)
+            # zeitstempel = datetime.now().strftime("%d%m%y_%H_%M_%S")
+            # debug_name_path = f"{para_now}_{zeitstempel}.txt"
+            # np.savetxt(debug_name_path, messdaten_debug_transp, fmt='%s', delimiter=';', header=";".join(headers_debug), comments='')
 
-            print(f"Numpy-Matrix wurde als {debug_name_path} gespeichert.")
-
+            # print(f"Numpy-Matrix wurde als {debug_name_path} gespeichert.")
+    #
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
@@ -1103,7 +1133,7 @@ window_width = 1065
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
-variable_options = ["Spannung links", "Spannung rechts", "Offset", "Frequenz"]
+variable_options = ["Spannung links", "Spannung rechts", "Frequenz"]
 parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
 
 # ###############################################################################################################################################
@@ -1116,6 +1146,7 @@ master.title("HalbleiterLeitTechnik")
 
 vcmd_voltage = master.register(val.validation_entry_voltage)
 vcmd_current = master.register(val.validation_entry_current)
+# vcdm_var_start = master.register(val.validation_entry_var_start)
 
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master, relief='groove')
