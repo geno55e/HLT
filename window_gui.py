@@ -1459,7 +1459,7 @@ Combo_DebugPlot = ttk.Combobox(
 Combo_DebugPlot.current(4)
 Combo_DebugPlot.grid(column=3, row=6, padx=5, pady=3)
 
-#   ##########################################
+#   ################### INITIALISIERUNG GUI & HARDWARE   #######################
 
 
 fig, ax = plt.subplots()
@@ -1471,6 +1471,18 @@ progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
 toolbar = NavigationToolbar2Tk(canvas, Frame_Plot)
 
+# Initialisiere Quelle HM8143 (setzte die default Werte aus den Entries)
+HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())
+HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())
+HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())
+HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
+
+# Initialisiere Frequenzgenerator HM8150 ohne Offset (setzte die default Werte aus der Combo und den Entries)
+HM8150_Freq_Wellenform(Combo_Wellenform_HM8150_Freq.get())
+HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())
+HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())
+
+# Initialisiere Fluke (setzte die default Werte aus der Combo und den Entries)
 Fluke_set_Range()
 
 # Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
