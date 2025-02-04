@@ -434,17 +434,15 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             print("Spannung")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Spannung
             Combo_Messbereich_Fluke.current(0)
-            fluke_Einheit = "V"
         case "DC I" | "AC I":
             print("Strom")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Strom
             Combo_Messbereich_Fluke.current(0)
-            fluke_Einheit = "A"
         case "Widerstand":
             print("Widerstand")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(0)
-            fluke_Einheit = "Ohm"
+
 
 
 def Widgets_sperren():
@@ -1138,7 +1136,7 @@ def Messung():
     HM8143_Quelle_AusgangOff()
 
 
-# -----------------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 headers = 0
 messdaten = 0
 x_i = 0
@@ -1146,7 +1144,7 @@ var_x = []
 mess_y = []
 messungStop = False
 geraete_lokal_on = False
-fluke_Einheit = "X"
+
 
 window_height = 700
 window_width = 1065
@@ -1157,7 +1155,7 @@ fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k 
 variable_options = ["Spannung links", "Spannung rechts", "Frequenz"]
 parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
 
-# ###############################################################################################################################################
+# ###################################################################################################################################################
 
 
 # Instanziiere das Hauptfenster'
