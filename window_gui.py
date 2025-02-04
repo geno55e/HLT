@@ -1,13 +1,14 @@
-from tkinter import filedialog
-import matplotlib.pyplot as plt
 import VISAtestMode    # test
 import tkinter as tk
-import numpy as np
+from tkinter import filedialog
 from tkinter import ttk
+from tkinter import messagebox
+from tktooltip import ToolTip
+import numpy as np
 from time import sleep
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from datetime import datetime
-from tktooltip import ToolTip
 import Validation_functions as val
 # from MOSFET import simulate_mosfet_current
 
@@ -826,7 +827,6 @@ def Fluke_set_Range():
     integrationszeit = setIntegrationTime().upper()
     print(messgroesse + messbereich + integrationszeit + trig)
 
-    # zum TESTEN auskommentiert
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource('ASRL5::INSTR', read_termination='\r\n', query_delay=0.21)
     set_range = '*RST;*CLS;' + messgroesse + str(messbereich) + ';' + integrationszeit + ';' + trig
@@ -939,6 +939,23 @@ def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=
             HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
+def Message_Hinweis_Strommessung(messgroesse_eingestellt, messbereich_eingestellt):
+    """
+    Funktion überprüft, ob eine Strommessung durchgeführt wird. Wenn beim Fluke als Messgröße "DC I"/"AC I" und/oder ein Messbereich >= 100mA
+    ausgewählt wurde, wird eine Meldung ausgegeben, bei OK → True und bei Abbrechen → False
+    :param messgroesse_eingestellt: ausgewählte Messgröße
+    :param messbereich_eingestellt: ausgewählter Messbereich
+    :return: Bool
+    """
+    if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "400mA", "1A", "3A", "10A"):
+        return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr! Ab "
+                                                      "100mA auf richtigen Anschluss beim Fluke achten!")
+    if messbereich_eingestellt in ("100mA", "400mA", "1A", "3A", "10A"):
+        return messagebox.askokcancel("Strommessung", "ACHTUNG, ab 100mA auf richtigen Anschluss beim Fluke achten!")
+    if messgroesse_eingestellt in ("DC I", "AC I"):
+        return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr!")
+
+
 def Messung():
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
@@ -957,10 +974,14 @@ def Messung():
     global messdaten
     global headers
 
-    messungStop = False
     var_x = []
     mess_y = []
     x_i = 0
+    messungStop = False
+
+    # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
+    if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
+        return None
 
     para = Parameter_bestimmen()
 
@@ -1084,8 +1105,8 @@ def Messung():
             DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
-            ax.set_xscale('log')  # Standardmäßig lineare Skalierung
-            ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
+            # ax.set_xscale('log')  # Standardmäßig lineare Skalierung
+            # ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
             canvas.draw()
             master.update()
             x_i += 1
