@@ -433,15 +433,18 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
         case "DC V" | "AC V":
             print("Spannung")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Spannung
-            Combo_Messbereich_Fluke.current(0)
+            Combo_Messbereich_Fluke.current(2)
+            Fluke_set_Range()
         case "DC I" | "AC I":
             print("Strom")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Strom
-            Combo_Messbereich_Fluke.current(0)
+            Combo_Messbereich_Fluke.current(2)
+            Fluke_set_Range()
         case "Widerstand":
             print("Widerstand")
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
-            Combo_Messbereich_Fluke.current(0)
+            Combo_Messbereich_Fluke.current(2)
+            Fluke_set_Range()
 
 
 
