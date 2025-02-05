@@ -962,6 +962,17 @@ def Messung():
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
 
+    variable_check = Vali.validate_var_start_ziel_schritt(start=Eingabe_Startwert_Variable.get(), ziel=Eingabe_Zielwert_Variable.get(),
+                                                          schrittweite=Eingabe_Schrittweite_Variable.get(), variable=Combo_Variable.get())
+
+    if not variable_check[0]:
+        messagebox.showerror("Variable ungültig", variable_check[1])
+        return
+
+    # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
+    # if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
+    #     return
+
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
@@ -980,9 +991,7 @@ def Messung():
     x_i = 0
     messungStop = False
 
-    # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
-    if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
-        return None
+
 
     para = Parameter_bestimmen()
 
@@ -1055,8 +1064,14 @@ def Messung():
                     HM8143_Quelle_AusgangOn()
                 case "Frequenz":
                     print("Frequenz als Variable implementieren")
-                case "Offset":
-                    print("Offset als Variable implementieren")
+                    return
+                case "Compliance links":
+                    print("Compliance links")
+                    return
+                case "Compliance rechts":
+                    print("Compliance rechts")
+                    return
+
 
             if x_i > 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" + str(start_schritt_ziel[x_i,]) + " FLUKE:" + str(
                 wert_gemessen) + " U1:" + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " + str(
@@ -1168,8 +1183,6 @@ master.title("HalbleiterLeitTechnik")
 
 vcmd_voltage = master.register(Vali.validation_entry_voltage)
 vcmd_current = master.register(Vali.validation_entry_current)
-vcmd_var_para_start_ziel_schritt = master.register(Vali.validate_var_para_start_ziel_schritt)
-vcmd_para_manuell = master.register(Vali.validate_para_manuell)
 
 
 Frame_Steuerung = ttk.Frame(master)
@@ -1373,13 +1386,13 @@ ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Varia
 
 Combo_Variable.bind("<<ComboboxSelected>>", update_variable_options)
 
-Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6, validate="key", validatecommand=(vcmd_var_para_start_ziel_schritt, "%P"))
+Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Variable.insert(0, "0")
 ToolTip(Eingabe_Startwert_Variable, msg="Bei diesem Wert wird der erste Messpunkt der Kennlinie aufgenommen.")
-Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=6, validate="key", validatecommand=(vcmd_var_para_start_ziel_schritt, "%P"))
+Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schrittweite_Variable.insert(0, "0.2")
 ToolTip(Eingabe_Schrittweite_Variable, msg="Hier wird der Abstand zwischen zwei Messpunkten (Variable) eingegeben.")
-Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=6, validate="key", validatecommand = (vcmd_var_para_start_ziel_schritt, "%P"))
+Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Variable.insert(0, "2")
 ToolTip(Eingabe_Zielwert_Variable, msg="Hier wird der Maximalwert der Variable angegeben.\nACHTUNG: Der Zielwert muss größer als der Startwert sein.")
 
