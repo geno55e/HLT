@@ -8,21 +8,21 @@ import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-from datetime import datetime
-import Validation_functions as val
+# from datetime import datetime
+import Validation_functions as Vali
 # from MOSFET import simulate_mosfet_current
 
 
-def DebugPlot(var_x, u1=None, u2=None, i1=None, i2=None):
-    match Combo_DebugPlot.get():
-        case "U1":
-            ax.plot(var_x, u1, ':', linewidth=1)
-        case "U2":
-            ax.plot(var_x, u2, ':', linewidth=1)
-        case "I1":
-            ax.plot(var_x, i1, ':', linewidth=1)
-        case "I2":
-            ax.plot(var_x, i2, ':', linewidth=1)
+# def DebugPlot(var_x, u1=None, u2=None, i1=None, i2=None):
+#     match Combo_DebugPlot.get():
+#         case "U1":
+#             ax.plot(var_x, u1, ':', linewidth=1)
+#         case "U2":
+#             ax.plot(var_x, u2, ':', linewidth=1)
+#         case "I1":
+#             ax.plot(var_x, i1, ':', linewidth=1)
+#         case "I2":
+#             ax.plot(var_x, i2, ':', linewidth=1)
 
 
 # HM8143 Spannungsquelle
@@ -1100,7 +1100,7 @@ def Messung():
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
             ax.plot(var_x, mess_y, marker=".", markersize=3, linewidth=1)
-            DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
+            # DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
             # ax.set_xscale('log')  # Standardmäßig lineare Skalierung
@@ -1163,10 +1163,10 @@ master = tk.Tk()
 master.geometry("1500x560")
 master.title("HalbleiterLeitTechnik")
 
-vcmd_voltage = master.register(val.validation_entry_voltage)
-vcmd_current = master.register(val.validation_entry_current)
-vcmd_var_para_start_ziel_schritt = master.register(val.validate_var_para_start_ziel_schritt)
-vcmd_para_manuell = master.register(val.validate_para_manuell)
+vcmd_voltage = master.register(Vali.validation_entry_voltage)
+vcmd_current = master.register(Vali.validation_entry_current)
+vcmd_var_para_start_ziel_schritt = master.register(Vali.validate_var_para_start_ziel_schritt)
+vcmd_para_manuell = master.register(Vali.validate_para_manuell)
 
 
 Frame_Steuerung = ttk.Frame(master)
