@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 # from datetime import datetime
 import Validation_functions as Vali
-# from MOSFET import simulate_mosfet_current
+
 
 
 # def DebugPlot(var_x, u1=None, u2=None, i1=None, i2=None):
