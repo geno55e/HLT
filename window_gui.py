@@ -962,12 +962,34 @@ def Messung():
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
 
-    variable_check = Vali.validate_var_start_ziel_schritt(start=Eingabe_Startwert_Variable.get(), ziel=Eingabe_Zielwert_Variable.get(),
+
+    # Prüfe Eingabe der Werte für die Variable abhängig von dem ausgewählten Ausgang
+    variable_check = Vali.validate_var_start_ziel_schrittweite(start=Eingabe_Startwert_Variable.get(), ziel=Eingabe_Zielwert_Variable.get(),
                                                           schrittweite=Eingabe_Schrittweite_Variable.get(), variable=Combo_Variable.get())
 
     if not variable_check[0]:
         messagebox.showerror("Variable ungültig", variable_check[1])
         return
+
+    # Prüfe die eingegebenen Parameter, wenn die Auswahl nicht "ohne Parameter" ist, manuell wird separat geprüft
+    if Combo_Parameter.get() != "ohne Parameter":
+        if Combo_Parameter_Einteilung.get() in ("linear", "quadratisch", "exponentiell"):
+            parameter_check = Vali.validate_para_start_ziel_schritte(start=Eingabe_Startwert_Parameter.get(),
+                                                                     ziel=Eingabe_Zielwert_Parameter.get(),
+                                                                     schrittweite=Eingabe_Schritte_Parameter.get(),
+                                                                     parameter=Combo_Parameter.get())
+            if not parameter_check[0]:
+                messagebox.showerror("Parameter ungültig", parameter_check[1])
+                return
+
+        if Combo_Parameter_Einteilung.get() == "manuell":
+            parameter_check = Vali.validate_para_manuell(Eingabe_Parameter.get())
+
+            if not parameter_check:
+                messagebox.showerror("Parameter ungültig", "Eingabe ungültig, es dürfen nur Zahlen getrennt"
+                                                           "durch ; eingegeben werden")
+                return
+
 
     # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
     # if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
@@ -1487,14 +1509,14 @@ ToolTip(Button_Stop_Messung, msg="Sollte sich bereits im Laufe der Messung herau
                                  " auftreten, kann die Messung hier vorzeitig abgebrochen werden.")
 
 #   ############ Debug löschen ###############
-Combo_DebugPlot = ttk.Combobox(
-    Frame_Messung,
-    state="readonly",
-    values=["U1", "I1", "U2", "I2", "none"],
-    width=5
-)
-Combo_DebugPlot.current(4)
-Combo_DebugPlot.grid(column=3, row=6, padx=5, pady=3)
+# Combo_DebugPlot = ttk.Combobox(
+#     Frame_Messung,
+#     state="readonly",
+#     values=["U1", "I1", "U2", "I2", "none"],
+#     width=5
+# )
+# Combo_DebugPlot.current(4)
+# Combo_DebugPlot.grid(column=3, row=6, padx=5, pady=3)
 
 #   ################### INITIALISIERUNG GUI & HARDWARE   #######################
 
