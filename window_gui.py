@@ -1112,7 +1112,7 @@ def Messung():
                         # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                         # HM8143_Quelle_AusgangOn()
 
-            sleep(0.05)  # Wartezeit zwischen Messungen
+            sleep(0.5/float(Combo_Messdelay.get()[1:]))  # Wartezeit zwischen Messungen einstellbar
 
             # Speichere Daten und aktualisiere Plot
             ax.clear()
@@ -1186,8 +1186,8 @@ messungStop = False
 geraete_lokal_on = False
 
 
-window_height = 700
-window_width = 1065
+window_height = 515
+window_width = 1500
 
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
@@ -1200,7 +1200,8 @@ parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom 
 
 # Instanziiere das Hauptfenster'
 master = tk.Tk()
-master.geometry("1500x560")
+# master.geometry("1500x560")
+master.geometry(str(window_width) + "x" + str(window_height))
 master.title("HalbleiterLeitTechnik")
 
 vcmd_voltage = master.register(Vali.validation_entry_voltage)
@@ -1498,25 +1499,26 @@ Eingabe_Startwert_Parameter.grid(column=1, row=5, padx=5, pady=1)
 Eingabe_Zielwert_Parameter.grid(column=2, row=5, padx=5, pady=1)
 Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 
-Button_Start_Messung.grid(column=0, row=6, padx=5, pady=3)
+Combo_Messdelay = ttk.Combobox(
+    Frame_Messung,
+    state="readonly",
+    values=["x0.5", "x1", "x2", "x3"],
+    width=5
+)
+Combo_Messdelay.current(1)
+Combo_Messdelay.grid(column=0, row=6, padx=5, pady=3)
+ToolTip(Combo_Messdelay, msg="Messgeschwindigkeit (Wartezeit zwischen den Messungen): \n"
+                             "x0.5 = 1,2s, x1 = 600ms, x2 = 300ms, x3 = 200ms")
+
+Button_Start_Messung.grid(column=1, row=6, padx=5, pady=3)
 ToolTip(Button_Start_Messung, msg="Hier wird die Messung gestartet. Die Ausgänge des Netzgerätes und des Frequenzgenerators werden automatisch "
                                   "angeschaltet, die eingestellte Variable jeweils für jeden Parameter variiert und an jedem Messpunkt ein Messwert "
                                   "aufgenommen.")
-Button_Messdaten_Speichern.grid(column=1, row=6, padx=5, pady=3)
+Button_Messdaten_Speichern.grid(column=2, row=6, padx=5, pady=3)
 ToolTip(Button_Messdaten_Speichern, msg="Speichert die Messwerte unter dem ausgewählten Pfad als .csv")
-Button_Stop_Messung.grid(column=2, row=6, padx=5, pady=3)
+Button_Stop_Messung.grid(column=3, row=6, padx=5, pady=3)
 ToolTip(Button_Stop_Messung, msg="Sollte sich bereits im Laufe der Messung herausstellen, dass die Daten fehlerhaft sind oder sonstige Komplikationen"
                                  " auftreten, kann die Messung hier vorzeitig abgebrochen werden.")
-
-#   ############ Debug löschen ###############
-# Combo_DebugPlot = ttk.Combobox(
-#     Frame_Messung,
-#     state="readonly",
-#     values=["U1", "I1", "U2", "I2", "none"],
-#     width=5
-# )
-# Combo_DebugPlot.current(4)
-# Combo_DebugPlot.grid(column=3, row=6, padx=5, pady=3)
 
 #   ################### INITIALISIERUNG GUI & HARDWARE   #######################
 
