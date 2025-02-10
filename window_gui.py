@@ -743,7 +743,24 @@ def Parameter_bestimmen():
 #         case "ohne Parameter":
 #             return [1]
 
-def Create_table(headers, var):
+
+def make_headers_unique(heads):
+    """Funktion, um doppelte Werte in headers eindeutig zu machen."""
+    seen = {}  # Wörterbuch für bereits gesehene Werte
+    unique_headers = []
+
+    for header in heads:
+        if header not in seen:
+            seen[header] = 1  # Erster Auftritt des Headers
+            unique_headers.append(header)
+        else:
+            seen[header] += 1  # Zähler für doppelte Header erhöhen
+            unique_headers.append(f"{header}_{seen[header]}")  # Header eindeutig machen
+
+    return unique_headers
+
+
+def Create_table(headers_para, var):
     global Tabelle
     global h_scrollbar
 
@@ -758,12 +775,12 @@ def Create_table(headers, var):
     Tabelle.heading("#0", text="Variable", anchor=tk.CENTER)  # Überschrift ebenfalls zentriert
 
     # Konfigurieren der zusätzlichen Spalten aus der headers-Liste
-    Tabelle['columns'] = headers
-    for header in headers:
+    Tabelle['columns'] = headers_para
+    for header in headers_para:
         Tabelle.column(header, anchor=tk.CENTER, width=100)  # Zentrierte Ausrichtung für zusätzliche Spalten
         Tabelle.heading(header, text=header, anchor=tk.CENTER)  # Überschrift
 
-    # Beispiel-Daten (in diesem Fall Zufallsdaten für zusätzliche Spalten)
+    # Platzhalter-Daten (in diesem Fall Zufallsdaten für zusätzliche Spalten)
     for i, variable in enumerate(var):
         Tabelle.insert(parent='', index='end', iid=i, text=f"{variable:.2f}", values=())  # Leere values-Liste
 
@@ -1024,12 +1041,12 @@ def Messung():
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
             else:
-                headers = [Combo_Messgroesse_Fluke.get() + "_param_" + str(i) + "V" for i in para]
+                headers = make_headers_unique([Combo_Messgroesse_Fluke.get() + "_param_" + str(i) + "V" for i in para])
         case "Strom links" | "Strom rechts":
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
             else:
-                headers = [Combo_Messgroesse_Fluke.get() + "_param_" + str(i) + "A" for i in para]
+                headers = make_headers_unique([Combo_Messgroesse_Fluke.get() + "_param_" + str(i) + "A" for i in para])
         case "ohne Parameter":
                 headers = [Combo_Messgroesse_Fluke.get()]
 
