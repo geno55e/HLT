@@ -654,6 +654,7 @@ def Geraete_lokal_bedienen():
         Button_Messdaten_Speichern.configure(state='normal')
         Button_Start_Messung.configure(state='normal')
         Button_Stop_Messung.configure(state='normal')
+        Eingabe_Parameter.configure(state='normal')
         style.configure('My.TButton', foreground='black')
         HM8143_Quelle_remoteOn()
     else:
@@ -683,6 +684,7 @@ def Geraete_lokal_bedienen():
         Button_Messdaten_Speichern.configure(state='disabled')
         Button_Start_Messung.configure(state='disabled')
         Button_Stop_Messung.configure(state='disabled')
+        Eingabe_Parameter.configure(state='disabled')
         style.configure('My.TButton', foreground='green')
         HM8143_Quelle_AusgangOff()
         HM8150_Freq_OutputOff()
