@@ -473,6 +473,9 @@ def Widgets_sperren():
     Eingabe_Schritte_Parameter.configure(state='disabled')
     Button_Messdaten_Speichern.configure(state='disabled')
     Button_Geraete_lokal.configure(state='disabled')
+    Eingabe_Parameter.configure(state='disabled')
+    Button_x_Achse_toggle.configure(state='disabled')
+    Button_y_Achse_toggle.configure(state='disabled')
 
 
 def Widgets_entsperren():
@@ -500,6 +503,9 @@ def Widgets_entsperren():
     Eingabe_Schritte_Parameter.configure(state='normal')
     Button_Messdaten_Speichern.configure(state='normal')
     Button_Geraete_lokal.configure(state='normal')
+    Eingabe_Parameter.configure(state='normal')
+    Button_x_Achse_toggle.configure(state='normal')
+    Button_y_Achse_toggle.configure(state='normal')
 
 
 def Aktualisiere_Widgets_Parameter(event=None):
@@ -1002,6 +1008,7 @@ def Messung():
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
+    Widgets_sperren()
 
     Button_x_Achse_toggle['text'] = "X-linear"
     Button_y_Achse_toggle['text'] = "Y-linear"
@@ -1013,6 +1020,7 @@ def Messung():
 
     if not variable_check[0]:
         messagebox.showerror("Variable ungültig", variable_check[1])
+        Widgets_entsperren()
         return
 
     # Prüfe die eingegebenen Parameter, wenn die Auswahl nicht "ohne Parameter" ist, manuell wird separat geprüft
@@ -1024,6 +1032,7 @@ def Messung():
                                                                      parameter=Combo_Parameter.get())
             if not parameter_check[0]:
                 messagebox.showerror("Parameter ungültig", parameter_check[1])
+                Widgets_entsperren()
                 return
 
         if Combo_Parameter_Einteilung.get() == "manuell":
@@ -1032,11 +1041,13 @@ def Messung():
             if not parameter_check:
                 messagebox.showerror("Parameter ungültig", "Eingabe ungültig, es dürfen nur Zahlen getrennt"
                                                            "durch ; eingegeben werden")
+                Widgets_entsperren()
                 return
 
 
     # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
     # if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
+    #     Widgets_entsperren()
     #     return
 
     start = float(Eingabe_Startwert_Variable.get())
@@ -1195,6 +1206,7 @@ def Messung():
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     HM8143_Quelle_AusgangOff()
+    Widgets_entsperren()
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
