@@ -974,10 +974,37 @@ def Message_Hinweis_Strommessung(messgroesse_eingestellt, messbereich_eingestell
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr!")
 
 
+def toggle_x_scale():
+    """Wechselt die Skala der x-Achse zwischen linear und logarithmisch."""
+    current_scale = ax.get_xscale()
+    if current_scale == 'linear':
+        ax.set_xscale('log')
+        Button_x_Achse_toggle['text'] = "X-log"
+    else:
+        ax.set_xscale('linear')
+        Button_x_Achse_toggle['text'] = "X-linear"
+    canvas.draw()
+
+
+def toggle_y_scale():
+    """Wechselt die Skala der y-Achse zwischen linear und logarithmisch."""
+    current_scale = ax.get_yscale()
+    if current_scale == 'linear':
+        ax.set_yscale('log')
+        Button_y_Achse_toggle['text'] = "Y-log"
+    else:
+        ax.set_yscale('linear')
+        Button_y_Achse_toggle['text'] = "Y-linear"
+    canvas.draw()
+
+
 def Messung():
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
+
+    Button_x_Achse_toggle['text'] = "X-linear"
+    Button_y_Achse_toggle['text'] = "Y-linear"
 
 
     # Prüfe Eingabe der Werte für die Variable abhängig von dem ausgewählten Ausgang
@@ -1063,12 +1090,6 @@ def Messung():
         x_i = 0
         para_now = para[p_i]
 
-        # Anzeigen von der HAMEG-Spannungsquelle zum debuggen
-        u1 = []
-        i1 = []
-        u2 = []
-        i2 = []
-
         if Combo_Parameter.get() != "ohne Parameter":
             match Combo_Parameter.get():
                 case "Spannung links":
@@ -1112,10 +1133,14 @@ def Messung():
                     return
 
 
-            if x_i > 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" + str(start_schritt_ziel[x_i,]) + " FLUKE:" + str(
-                wert_gemessen) + " U1:" + str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " + str(
-                HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" + str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" + str(
-                HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" + str(HM8143_Quelle_ZeigeStromRechts()) + "A")
+            if x_i > 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
+                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
+                str(wert_gemessen) + " U1:" +
+                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
+                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
+                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
+                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
             print("------------------------------------------------------------------------------------")
 
             if Combo_Parameter.get() != "ohne Parameter":
@@ -1141,27 +1166,21 @@ def Messung():
             # sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
-            # Zum debuggen
-            u1.append(HM8143_Quelle_ZeigeSpannungLinks())
-            i1.append(HM8143_Quelle_ZeigeStromLinks())
-            u2.append(HM8143_Quelle_ZeigeSpannungRechts())
-            i2.append(HM8143_Quelle_ZeigeStromRechts())
 
-            if x_i == 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" + str(
-                start_schritt_ziel[x_i,]) + " FLUKE:" + str(wert_gemessen) + " U1:" + str(
-                HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " + str(
-                HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" + str(
-                HM8143_Quelle_ZeigeStromLinks()) + "A U2:" + str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" + str(
-                HM8143_Quelle_ZeigeStromRechts()) + "A")
+            if x_i == 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
+                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
+                str(wert_gemessen) + " U1:" +
+                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
+                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
+                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
+                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
 
             mess_y.append(wert_gemessen)
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
             ax.plot(var_x, mess_y, marker=".", markersize=3, linewidth=1)
-            # DebugPlot(var_x, u1, u2, i1, i2)  # Zum debuggen → löschen
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
-            # ax.set_xscale('log')  # Standardmäßig lineare Skalierung
-            # ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
             canvas.draw()
             master.update()
             x_i += 1
@@ -1172,21 +1191,6 @@ def Messung():
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
 
-            # Zum debuggen
-            # headers_debug = ['Variable', 'Fluke ' + Combo_Messgroesse_Fluke.get(), 'U1', 'I1', 'U2', 'I2']
-            # messdaten_debug = np.transpose(start_schritt_ziel)
-            # messdaten_debug = np.vstack((messdaten_debug, mess_y))
-            # messdaten_debug = np.vstack((messdaten_debug, u1))
-            # messdaten_debug = np.vstack((messdaten_debug, i1))
-            # messdaten_debug = np.vstack((messdaten_debug, u2))
-            # messdaten_debug = np.vstack((messdaten_debug, i2))
-            # messdaten_debug_transp = np.transpose(messdaten_debug)
-            # zeitstempel = datetime.now().strftime("%d%m%y_%H_%M_%S")
-            # debug_name_path = f"{para_now}_{zeitstempel}.txt"
-            # np.savetxt(debug_name_path, messdaten_debug_transp, fmt='%s', delimiter=';', header=";".join(headers_debug), comments='')
-
-            # print(f"Numpy-Matrix wurde als {debug_name_path} gespeichert.")
-    #
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
@@ -1226,7 +1230,7 @@ vcmd_current = master.register(Vali.validation_entry_current)
 
 
 Frame_Steuerung = ttk.Frame(master)
-Frame_Plot = ttk.Frame(master, relief='groove')
+Frame_Plot = ttk.Frame(master)
 Frame_Tabelle = ttk.Frame(master)
 
 Frame_Steuerung.place(x=0, y=0, relwidth=0.23, relheight=1)
@@ -1537,13 +1541,21 @@ Button_Stop_Messung.grid(column=3, row=6, padx=5, pady=3)
 ToolTip(Button_Stop_Messung, msg="Sollte sich bereits im Laufe der Messung herausstellen, dass die Daten fehlerhaft sind oder sonstige Komplikationen"
                                  " auftreten, kann die Messung hier vorzeitig abgebrochen werden.")
 
+
 #   ################### INITIALISIERUNG GUI & HARDWARE   #######################
-
-
 fig, ax = plt.subplots()
 ax.grid()
+ax.set_xscale('linear')  # Standardmäßig lineare Skalierung
+ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
+
 canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
 canvas.get_tk_widget().pack(fill='both', expand=True)
+
+Button_y_Achse_toggle = ttk.Button(Frame_Plot, text="Y-linear", command=toggle_y_scale)
+Button_y_Achse_toggle.pack(side=tk.RIGHT, padx=3)
+
+Button_x_Achse_toggle = ttk.Button(Frame_Plot, text="X-linear", command=toggle_x_scale)
+Button_x_Achse_toggle.pack(side=tk.RIGHT, padx=3)
 
 progressbar = ttk.Progressbar(Frame_Steuerung)
 progressbar.pack(fill='x', expand=True)
