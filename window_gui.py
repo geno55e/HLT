@@ -965,7 +965,7 @@ def regulate_current(target_current: float, var_i, start_voltage=0.0, step_size=
             HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
-def Message_Hinweis_Strommessung(messgroesse_eingestellt, messbereich_eingestellt):
+def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestellt):
     """
     Funktion überprüft, ob eine Strommessung durchgeführt wird. Wenn beim Fluke als Messgröße "DC I"/"AC I" und/oder ein Messbereich >= 100mA
     ausgewählt wurde, wird eine Meldung ausgegeben, bei OK → True und bei Abbrechen → False
@@ -1047,8 +1047,8 @@ def Messung():
                 return
 
 
-    # Prüfe ob Strommessung durchgeführt wird, bei Abbrechen wird Messung gestoppt
-    # if not Message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
+    # Prüfe ob Strommessung durchgeführt wird, beim Abbrechen wird Messung gestoppt
+    # if not message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
     #     Widgets_entsperren()
     #     return
 
@@ -1071,12 +1071,14 @@ def Messung():
     messungStop = False
 
 
-
     para = Parameter_bestimmen()
 
+    # Initialisierung Progressbar
     messwerte_insgesamt = int((ziel - start) / schritt) * len(para)
     progressbar['maximum'] = messwerte_insgesamt  # Lege das Maximum von der Progressbar fest
-    match Combo_Parameter.get():  # Bestimme den Tabellenkopf
+
+    # Bestimme den Tabellenkopf
+    match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts":
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
@@ -1090,8 +1092,10 @@ def Messung():
         case "ohne Parameter":
                 headers = [Combo_Messgroesse_Fluke.get()]
 
+    # Tabelle wird erstellt
     Create_table(headers, list(start_schritt_ziel))
 
+    # Transponiere Variable
     messdaten = np.transpose(start_schritt_ziel)
 
     p_i = 0
@@ -1136,25 +1140,14 @@ def Messung():
                     HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_AusgangOn()
                 case "Frequenz":
-                    print("Frequenz als Variable implementieren")
-                    return
+                    HM8150_Freq_Frequenz(start_schritt_ziel[x_i,])
+                    HM8150_Freq_OutputOn()
                 case "Compliance links":
-                    print("Compliance links")
-                    return
+                    HM8143_Quelle_StromBegrenzLinks(start_schritt_ziel[x_i,])
+                    HM8143_Quelle_AusgangOn()
                 case "Compliance rechts":
-                    print("Compliance rechts")
-                    return
-
-
-            if x_i > 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
-                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
-                str(wert_gemessen) + " U1:" +
-                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
-                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
-                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
-                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
-                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
-            print("------------------------------------------------------------------------------------")
+                    HM8143_Quelle_StromBegrenzRechts(start_schritt_ziel[x_i,])
+                    HM8143_Quelle_AusgangOn()
 
             if Combo_Parameter.get() != "ohne Parameter":
                 match Combo_Parameter.get():    # restlichen Parameter noch rein machen
@@ -1172,24 +1165,26 @@ def Messung():
             # Speichere Daten und aktualisiere Plot
             ax.clear()
             ax.grid()
+
             for p_fertig in range(p_i):  # Ab den zweiten Parameter, gib die Kurven davor sofort aus
                 ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.', linewidth=0.4, markersize=1)
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
-            # sleep(1) # Zum einpegeln (Evtl nicht nötig, zum testen da bei Bipo Strom schwankt)
+
             wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
 
-
-            if x_i == 0: print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
-                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
-                str(wert_gemessen) + " U1:" +
-                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
-                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
-                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
-                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
-                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
+            print("------------------------------------------------------------------------------------")
+            print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
+            str(start_schritt_ziel[x_i,]) + " FLUKE:" +
+            str(wert_gemessen) + " U1:" +
+            str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
+            str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
+            str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
+            str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+            str(HM8143_Quelle_ZeigeStromRechts()) + "A")
 
             mess_y.append(wert_gemessen)
+
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
             ax.plot(var_x, mess_y, marker=".", markersize=3, linewidth=1)
             ax.set_xlabel(Combo_Variable.get())
@@ -1204,10 +1199,12 @@ def Messung():
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
 
+    # Routine nach der letzten Messung
     ax.legend(headers)
     canvas.draw()
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     HM8143_Quelle_AusgangOff()
+    HM8150_Freq_OutputOff()
     Widgets_entsperren()
 
 
@@ -1227,7 +1224,7 @@ window_width = 1500
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
-variable_options = ["Spannung links", "Spannung rechts", "Frequenz"]
+variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Compliance rechts", "Frequenz"]
 parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
 
 # ###################################################################################################################################################
