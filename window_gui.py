@@ -1,3 +1,5 @@
+from email.errors import MessageError
+
 import VISAtestMode    # test
 import tkinter as tk
 from tkinter import filedialog
@@ -1171,7 +1173,15 @@ def Messung():
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
 
-            wert_gemessen = Fluke_Messe_Wert_live()  # FLUKE MESSE WERT
+            # Fluke Messung mit Fehlerbehandlung, falls die Kommunikation mit dem Fluke unterbrochen wird
+            try:
+                wert_gemessen = Fluke_Messe_Wert_live() # FLUKE MESSE WERT
+            except Exception as e:
+                messungStop = True
+                messagebox.showerror("FLUKE Kommunikationsfehler", "Fehler bei der Kommunikation mit "
+                                                                   "Fluke Multimeter 8846A")
+                break  # Verlässt die while-Schleife
+
 
             print("------------------------------------------------------------------------------------")
             print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
