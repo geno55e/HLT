@@ -1199,6 +1199,18 @@ def Messung():
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
 
+
+
+        # Wenn Messung gestoppt wird und mess_y weniger Werte als Zeilen in messdaten hat, werden die fehlenden Werte mit -1 aufgefüllt
+        if messungStop and (len(mess_y) < len(start_schritt_ziel)):
+            # Fehlende Länge berechnen
+            missing_length = len(start_schritt_ziel) - len(mess_y)
+
+            # Auffüllen mit -1
+            mess_y.extend([-1] * missing_length)
+
+            messdaten = np.vstack((messdaten, mess_y))
+
     # Routine nach der letzten Messung
     ax.legend(headers)
     canvas.draw()
