@@ -1,5 +1,3 @@
-from email.errors import MessageError
-
 import VISAtestMode    # test
 import tkinter as tk
 from tkinter import filedialog
@@ -10,21 +8,7 @@ import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-# from datetime import datetime
 import Validation_functions as Vali
-
-
-
-# def DebugPlot(var_x, u1=None, u2=None, i1=None, i2=None):
-#     match Combo_DebugPlot.get():
-#         case "U1":
-#             ax.plot(var_x, u1, ':', linewidth=1)
-#         case "U2":
-#             ax.plot(var_x, u2, ':', linewidth=1)
-#         case "I1":
-#             ax.plot(var_x, i1, ':', linewidth=1)
-#         case "I2":
-#             ax.plot(var_x, i2, ':', linewidth=1)
 
 
 # HM8143 Spannungsquelle
@@ -447,7 +431,6 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
             Combo_Messbereich_Fluke['values'] = fluke_Messbereich_Widerstand
             Combo_Messbereich_Fluke.current(2)
             Fluke_set_Range()
-
 
 
 def Widgets_sperren():
