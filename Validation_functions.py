@@ -48,33 +48,33 @@ def validate_var_start_ziel_schrittweite(start, schrittweite, ziel, variable):
 
         if variable in ["Spannung links", "Spannung rechts"]:
             if not (0 <= start <= 30 and 0 <= ziel <= 30 and 0 <= schrittweite <= 30 and ziel > start):
-                return False, "Werte dürfen nur zwischen 0 und 30 liegen."
+                return False, "Werte dürfen nur zwischen 0V und 30V liegen."
         elif variable in ["Compliance links", "Compliance rechts"]:
             if not (0 <= start <= 2 and 0 <= ziel <= 2 and 0 <= schrittweite <= 2 and ziel > start):
-                return False, "Werte dürfen nur zwischen 0 und 2 liegen."
+                return False, "Werte dürfen nur zwischen 0A und 2A liegen."
         elif variable == "Frequenz":
-            if not (0.01 <= start <= 1250000000 and 0.01 <= ziel <= 1250000000 and 0.01 <= schrittweite <= 1250000000 and ziel > start):
-                return False, "Werte dürfen nur zwischen 0.01 und 1.25e9 liegen."
+            if not (50 <= start <= 240000 and 50 <= ziel <= 240000 and 0.01 <= schrittweite <= 240000 and ziel > start):
+                return False, "Werte dürfen nur zwischen 50Hz und 240kHz liegen."
 
     except ValueError:
         return False, "Bitte gültige Zahlen eingeben."
 
     return True, None
 
-def validate_para_start_ziel_schritte(start, schrittweite, ziel, parameter):
+def validate_para_start_ziel_schritte(start, schritte, ziel, parameter):
     try:
         start = float(start)
         ziel = float(ziel)
-        schrittweite = float(schrittweite)
+        schritte = int(schritte)
 
         if start > ziel:
             return False, "Es muss gelten: Zielwert > Startwert"
 
         if parameter in ["Spannung links", "Spannung rechts"]:
-            if not (0 <= start <= 30 and 0 <= ziel <= 30 and 0 <= schrittweite <= 30 and ziel > start):
+            if not (0 <= start <= 30 and 0 <= ziel <= 30 and ziel > start):
                 return False, "Werte dürfen nur zwischen 0 und 30 liegen."
         elif parameter in ["Strom links", "Strom rechts"]:
-            if not (0 <= start <= 2 and 0 <= ziel <= 2 and 0 <= schrittweite <= 2 and ziel > start):
+            if not (0 <= start <= 2 and 0 <= ziel <= 2 and ziel > start):
                 return False, "Werte dürfen nur zwischen 0 und 2 liegen."
     except ValueError:
         return False, "Bitte gültige Zahlen eingeben."
