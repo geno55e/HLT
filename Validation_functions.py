@@ -61,20 +61,20 @@ def validate_var_start_ziel_schrittweite(start, schrittweite, ziel, variable):
 
     return True, None
 
-def validate_para_start_ziel_schritte(start, schrittweite, ziel, parameter):
+def validate_para_start_ziel_schritte(start, schritte, ziel, parameter):
     try:
         start = float(start)
         ziel = float(ziel)
-        schrittweite = float(schrittweite)
+        schritte = int(schritte)
 
         if start > ziel:
             return False, "Es muss gelten: Zielwert > Startwert"
 
         if parameter in ["Spannung links", "Spannung rechts"]:
-            if not (0 <= start <= 30 and 0 <= ziel <= 30 and 0 <= schrittweite <= 30 and ziel > start):
+            if not (0 <= start <= 30 and 0 <= ziel <= 30 and ziel > start):
                 return False, "Werte dürfen nur zwischen 0 und 30 liegen."
         elif parameter in ["Strom links", "Strom rechts"]:
-            if not (0 <= start <= 2 and 0 <= ziel <= 2 and 0 <= schrittweite <= 2 and ziel > start):
+            if not (0 <= start <= 2 and 0 <= ziel <= 2 and ziel > start):
                 return False, "Werte dürfen nur zwischen 0 und 2 liegen."
     except ValueError:
         return False, "Bitte gültige Zahlen eingeben."
