@@ -799,14 +799,15 @@ def Wert_in_Tabelle_einfuegen(row_id, column, value):
 def Save_Messdaten_to_File():
     global messdaten
     global headers
-    headers_string = ";".join(headers)
-    messdaten_transp = np.transpose(messdaten)
-    # Datei speichern Dialog öffnen
-    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("Text files", "*."+config.format_export), ("All files", "*.*")])
-    if file_path:
-        # Datei öffnen und Matrix speichern
-        np.savetxt(file_path, messdaten_transp, fmt='%s', delimiter=config.trennzeichen, header=headers_string, comments='')
-        print(f"Numpy-Matrix wurde in {file_path} gespeichert.")
+    if messdaten.size > 0 and headers.size > 0:
+        headers_string = ";".join(headers)
+        messdaten_transponiert = np.transpose(messdaten)
+        # Dialog zum Speichern des Exports öffnen
+        file_path = filedialog.asksaveasfilename(defaultextension="."+config.format_export, filetypes=[("Text files", "*."+config.format_export), ("All files", "*.*")])
+        if file_path:
+            # Datei öffnen und Matrix speichern
+            np.savetxt(file_path, messdaten_transponiert, fmt='%s', delimiter=config.trennzeichen, header=headers_string, comments='')
+            print(f"Numpy-Matrix wurde in {file_path} gespeichert.")
 
 
 def Fluke_reset():
@@ -1316,8 +1317,8 @@ def Messung():
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
-headers = 0
-messdaten = 0
+headers = np.array([])
+messdaten = np.array([])
 x_i = 0
 var_x = []
 mess_y = []
