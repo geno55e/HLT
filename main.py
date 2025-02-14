@@ -90,6 +90,7 @@ def HM8143_Quelle_AusgangOn():
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('OP1')
     my_instrument.close()
+    Button_on_off_HM8143_Quelle["text"] = "On"
 
 
 def HM8143_Quelle_AusgangOff():
@@ -100,14 +101,18 @@ def HM8143_Quelle_AusgangOff():
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
     my_instrument.close()
+    style.configure('quelle.TButton', foreground='black')
+    Button_on_off_HM8143_Quelle["text"] = "Off"
 
 
 def HM8143_Quelle_Toggle_Ausgang():
     if Button_on_off_HM8143_Quelle.cget("text") == 'Off':
         HM8143_Quelle_AusgangOn()
+        style.configure('quelle.TButton', foreground='green')
         Button_on_off_HM8143_Quelle["text"] = "On"
     else:
         HM8143_Quelle_AusgangOff()
+        style.configure('quelle.TButton', foreground='black')
         Button_on_off_HM8143_Quelle["text"] = "Off"
 
 
@@ -308,6 +313,7 @@ def HM8150_Freq_OutputOn():
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OT1')
     my_instrument.close()
+    Button_Output_on_off_HM8150_Freq["text"] = "On"
 
 
 def HM8150_Freq_OutputOff():
@@ -318,14 +324,18 @@ def HM8150_Freq_OutputOff():
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OT0')
     my_instrument.close()
+    style.configure('freq.TButton', foreground='black')
+    Button_Output_on_off_HM8150_Freq["text"] = "Off"
 
 
 def HM8150_Freq_Toggle_Output():
     if Button_Output_on_off_HM8150_Freq.cget("text") == 'Off':
         HM8150_Freq_OutputOn()
+        style.configure('freq.TButton', foreground='green')
         Button_Output_on_off_HM8150_Freq["text"] = "On"
     else:
         HM8150_Freq_OutputOff()
+        style.configure('freq.TButton', foreground='black')
         Button_Output_on_off_HM8150_Freq["text"] = "Off"
 
 
@@ -646,7 +656,7 @@ def Geraete_lokal_bedienen():
         Button_Start_Messung.configure(state='normal')
         Button_Stop_Messung.configure(state='normal')
         Eingabe_Parameter.configure(state='normal')
-        style.configure('My.TButton', foreground='black')
+        style.configure('lokal.TButton', foreground='black')
         HM8143_Quelle_remoteOn()
     else:
         # Wechsle zu lokal
@@ -676,7 +686,7 @@ def Geraete_lokal_bedienen():
         Button_Start_Messung.configure(state='disabled')
         Button_Stop_Messung.configure(state='disabled')
         Eingabe_Parameter.configure(state='disabled')
-        style.configure('My.TButton', foreground='green')
+        style.configure('lokal.TButton', foreground='green')
         HM8143_Quelle_AusgangOff()
         HM8150_Freq_OutputOff()
         HM8143_Quelle_remoteOff()
@@ -901,7 +911,7 @@ def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step
     current = get_current()
     error = round((target_current - current), 3)
     if not HM8143_IstAusgangInCC(ausgang=1) and abs(
-            error) <= tolerance:  # Wenn Strom bereits innerhalb der Tolleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue EInstellung)
+            error) <= tolerance:  # Wenn Strom bereits innerhalb der Toleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue Einstellung)
         return None
 
     # Starte die Regelung der Spannung
@@ -1239,11 +1249,26 @@ def Messung():
             if Combo_Parameter.get() != "ohne Parameter":
                 match Combo_Parameter.get():    # restlichen Parameter noch rein machen
                     case "Strom links":
-                        regulate_current_links(target_current=float(para_now), var_i=x_i)
+                        try:
+                            regulate_current_links(target_current=float(para_now), var_i=x_i)
+                        except Exception as e:
+                            messungStop = True
+                            messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler",
+                                                 "Fehler bei der Kommunikation mit "
+                                                 "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
+                            break  # Verlässt die while-Schleife
                         # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                         # HM8143_Quelle_AusgangOn()
                     case "Strom rechts":
-                        regulate_current_rechts(target_current=float(para_now), var_i=x_i)
+                        try:
+                            regulate_current_rechts(target_current=float(para_now), var_i=x_i)
+                        except Exception as e:
+                            messungStop = True
+                            messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler",
+                                                 "Fehler bei der Kommunikation mit "
+                                                 "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
+                            break  # Verlässt die while-Schleife
+
                         # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                         # HM8143_Quelle_AusgangOn()
 
@@ -1268,16 +1293,24 @@ def Messung():
                                                                    "Fluke Multimeter 8846A")
                 break  # Verlässt die while-Schleife
 
+            # DEBUG Ausgabe auf Konsole
+            try:
+                print("------------------------------------------------------------------------------------")
+                print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
+                      str(start_schritt_ziel[x_i,]) + " FLUKE:" +
+                      str(wert_gemessen) + " U1:" +
+                      str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
+                      str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
+                      str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
+                      str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+                      str(HM8143_Quelle_ZeigeStromRechts()) + "A")
+            except Exception as e:
+                messungStop = True
+                messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler", "Fehler bei der Kommunikation mit "
+                                                                   "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
+                break  # Verlässt die while-Schleife
 
-            print("------------------------------------------------------------------------------------")
-            print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
-                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
-                str(wert_gemessen) + " U1:" +
-                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
-                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
-                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
-                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
-                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
+
 
             mess_y.append(wert_gemessen)
 
@@ -1360,11 +1393,10 @@ Tabelle = ttk.Treeview(Frame_Tabelle, selectmode='browse')
 h_scrollbar = ttk.Scrollbar(Frame_Tabelle, orient=tk.HORIZONTAL, command=Tabelle.xview)
 
 style = ttk.Style()
-# style.configure('My.TButton', background='lightblue', foreground='black')
 
 # Lokal
 Frame_Lokal = ttk.Frame(Frame_Steuerung)
-Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen", style='My.TButton', command=Geraete_lokal_bedienen)
+Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen", style='lokal.TButton', command=Geraete_lokal_bedienen)
 ToolTip(Button_Geraete_lokal, msg="Schaltet zwischen remote (Bedienelemente an den Gerätet sind gesperrt) und lokal um")
 
 # Lokal Design
@@ -1394,7 +1426,7 @@ Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
 ToolTip(Eingabe_Strom_links_HM8143_Quelle, msg="Setzt die Strombegrenzung des linken Ausgangs: 0 - 2 [A] \n "
                                                "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
-Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", command=HM8143_Quelle_Toggle_Ausgang)
+Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", style='quelle.TButton', command=HM8143_Quelle_Toggle_Ausgang)
 ToolTip(Button_on_off_HM8143_Quelle, msg="Schaltet die Ausgänge des Netzgerätes an und aus")
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "1.0")
@@ -1462,7 +1494,7 @@ Eingabe_Offset_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Offset(Ei
 
 Label_Output_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Output")
 Label_Offset_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Offset")
-Button_Output_on_off_HM8150_Freq = ttk.Button(Frame_HM8150_Freq, text="Off", command=HM8150_Freq_Toggle_Output)
+Button_Output_on_off_HM8150_Freq = ttk.Button(Frame_HM8150_Freq, text="Off", style='freq.TButton', command=HM8150_Freq_Toggle_Output)
 ToolTip(Button_Output_on_off_HM8150_Freq, msg="Schaltet den Ausgang den Funktionsgenerators an bzw. aus")
 Button_Offset_on_off_HM8150_Freq = ttk.Button(Frame_HM8150_Freq, text="Off", command=HM8150_Freq_Toggle_Offset)
 ToolTip(Button_Offset_on_off_HM8150_Freq, msg="Schaltet den Gleichspannungsanteil an bzw. aus")
