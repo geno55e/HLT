@@ -515,11 +515,14 @@ def Aktualisiere_Widgets_Parameter(event=None):
 
     match selected_parameter:
         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
-            Combo_Parameter_Einteilung.current(3)
-            Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
+            # Combo_Parameter_Einteilung.current(3)
             Combo_Parameter_Einteilung.grid(column=0, row=5, sticky="W", padx=5, pady=1)
-            Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
             Label_Parameter_Einteilung.grid(column=0, row=4, sticky="W", padx=5, pady=1)
+            if Combo_Parameter_Einteilung.get() == "manuell":
+                Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
+                Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
+
+
 
         case "ohne Parameter":
             Label_Startwert_Parameter.grid_forget()
@@ -1267,13 +1270,13 @@ def Messung():
 
             print("------------------------------------------------------------------------------------")
             print("(" + str(progress + 1) + "/" + str(messwerte_insgesamt) + ") VAR:" +
-            str(start_schritt_ziel[x_i,]) + " FLUKE:" +
-            str(wert_gemessen) + " U1:" +
-            str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
-            str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
-            str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
-            str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
-            str(HM8143_Quelle_ZeigeStromRechts()) + "A")
+                str(start_schritt_ziel[x_i,]) + " FLUKE:" +
+                str(wert_gemessen) + " U1:" +
+                str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
+                str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
+                str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
+                str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+                str(HM8143_Quelle_ZeigeStromRechts()) + "A")
 
             mess_y.append(wert_gemessen)
 
@@ -1599,7 +1602,7 @@ ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter 
 
 Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())))
 
-Eingabe_Parameter = ttk.Entry(Frame_Messung, width=20)
+Eingabe_Parameter = ttk.Entry(Frame_Messung, width=32)
 ToolTip(Eingabe_Parameter, msg="Hier können Parameter manuell mit einem Semikolon ; getrennt eingegeben werden z.B 1;1.5;2")
 
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung, width=6)
@@ -1697,13 +1700,13 @@ def closing_cbk():
     HM8150_Freq_OutputOff()
     HM8150_Freq_remoteOff()
     Fluke_reset()
+
     # Shutdown procedure
     master.quit()
     master.destroy()
 
 
 Aktualisiere_Widgets_Parameter()    # Damit die Widgets beim Start aktualisiert werden, sonst werden die Felder für Parametereinteilung usw. angezeigt
-# Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())  # Für debugging, später löschen
 
 master.protocol("WM_DELETE_WINDOW", closing_cbk)
 
