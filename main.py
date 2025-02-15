@@ -1369,9 +1369,17 @@ variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Co
 if config.pseudostromquelle_active:
     parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
     default_parameter = 4
+    strom_tooltip = ("Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant).\n"
+                     "- die Variablen werden für jeden Parameter wiederholt durchlaufen.\n- der Wert in dem entsprechenden "
+                     "Bedienelement wird ignoriert.\nACHTUNG: Wenn hier Ströme unter 10mA eingestellt werden, könnte es "
+                     "zu einer unpräzisen Regelung kommen. (Pseudostromquelle)")
+
 else:
     parameter_options = ["Spannung links", "Spannung rechts", "ohne Parameter"]
     default_parameter = 2
+    strom_tooltip = ("Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant).\n"
+                     "- die Variablen werden für jeden Parameter wiederholt durchlaufen.\n- der Wert in dem entsprechenden "
+                     "Bedienelement wird ignoriert.")
 
 # ###################################################################################################################################################
 
@@ -1581,8 +1589,8 @@ Combo_Variable = ttk.Combobox(
     width=15
 )
 Combo_Variable.current(0)
-ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert, der in dem entsprechenden Bedienelement steht,"
-                            " wird ignoriert.")
+ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert in dem entsprechenden "
+                     "Bedienelement wird ignoriert.")
 
 Combo_Variable.bind("<<ComboboxSelected>>", update_variable_options)
 
@@ -1607,8 +1615,7 @@ Combo_Parameter = ttk.Combobox(
     width=15
 )
 Combo_Parameter.current(default_parameter)
-ToolTip(Combo_Parameter, msg="Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant), für den jeweils die Variable durchlaufen"
-                             " wird. Der Wert, der in dem entsprechenden Bedienelement steht, wird ignoriert.")
+ToolTip(Combo_Parameter, msg=strom_tooltip)
 
 Combo_Parameter.bind("<<ComboboxSelected>>", Aktualisiere_Widgets_Parameter)
 
@@ -1620,13 +1627,13 @@ Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
 
 Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Parameter.insert(0, "1")
-ToolTip(Eingabe_Startwert_Parameter, msg="Start")
+ToolTip(Eingabe_Startwert_Parameter, msg="Startwert bei linear, quadratischer und logarithmischer Einteilung")
 Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Parameter.insert(0, "8")
-ToolTip(Eingabe_Zielwert_Parameter, msg="Ziel")
+ToolTip(Eingabe_Zielwert_Parameter, msg="Zielwert bei linear, quadratischer und logarithmischer Einteilung")
 Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schritte_Parameter.insert(0, "1")
-ToolTip(Eingabe_Schritte_Parameter, msg="Schritt")
+ToolTip(Eingabe_Schritte_Parameter, msg="Anzahl der Werte bei linear, quadratischer und logarithmischer Einteilung")
 
 Combo_Parameter_Einteilung = ttk.Combobox(
     Frame_Messung,
@@ -1635,8 +1642,15 @@ Combo_Parameter_Einteilung = ttk.Combobox(
     width=15
 )
 Combo_Parameter_Einteilung.current(3)
-ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter bestimmt, bei manuell können die gewünschten Parameter händisch mit ;"
-                                        " getrennt eingegeben werden")
+ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter bestimmt.\n\n"
+                                        "linear: Erzeugt die eingestellte Anzahl (Schritte) der Parameter zwischen "
+                                        "den Start- und Zielwert.\n\nquadratisch: Quadriert den Start- und Zielwert, "
+                                        "generiert die festgelegte Anzahl von Parametern (Schritten) zwischen den "
+                                        "quadrierten Werten und nimmt anschließend die Wurzel der erzeugten Werte.\n\n"
+                                        "exponentiell: Exponenziert den Start- und Zielwert, generiert die festgelegte "
+                                        "Anzahl von Parametern (Schritten) zwischen den Exponentialwerten und berechnet "
+                                        "den Logarithmus der Werte.\n\n"
+                                        "manuell: Die gewünschten Parameter können manuell eingegeben werden.")
 
 Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())))
 
@@ -1692,7 +1706,7 @@ ToolTip(Button_Start_Messung, msg="Hier wird die Messung gestartet. Die Ausgäng
                                   "angeschaltet, die eingestellte Variable jeweils für jeden Parameter variiert und an jedem Messpunkt ein Messwert "
                                   "aufgenommen.")
 Button_Messdaten_Speichern.grid(column=2, row=6, padx=5, pady=3)
-ToolTip(Button_Messdaten_Speichern, msg="Speichert die Messwerte unter dem ausgewählten Pfad als .csv")
+ToolTip(Button_Messdaten_Speichern, msg="Speichert die Messwerte unter dem ausgewählten Pfad als ."+config.format_export)
 Button_Stop_Messung.grid(column=3, row=6, padx=5, pady=3)
 ToolTip(Button_Stop_Messung, msg="Sollte sich bereits im Laufe der Messung herausstellen, dass die Daten fehlerhaft sind oder sonstige Komplikationen"
                                  " auftreten, kann die Messung hier vorzeitig abgebrochen werden.")
