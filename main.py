@@ -1142,9 +1142,9 @@ def Messung():
 
 
     # Prüfe ob Strommessung durchgeführt wird, beim Abbrechen wird Messung gestoppt
-    # if not message_Hinweis_Strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
-    #     Widgets_entsperren()
-    #     return
+    if not message_hinweis_strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
+        Widgets_entsperren()
+        return
 
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
