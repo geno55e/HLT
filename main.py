@@ -813,10 +813,10 @@ def Save_Messdaten_to_File():
         headers_string = ";".join(headers)
         messdaten_transponiert = np.transpose(messdaten)
         # Dialog zum Speichern des Exports öffnen
-        file_path = filedialog.asksaveasfilename(defaultextension="."+config.format_export, filetypes=[("Text files", "*."+config.format_export), ("All files", "*.*")])
+        file_path = filedialog.asksaveasfilename(defaultextension="."+config.format_export, filetypes=[(config.format_export+" files", "*."+config.format_export), ("All files", "*.*")])
         if file_path:
             # Datei öffnen und Matrix speichern
-            np.savetxt(file_path, messdaten_transponiert, fmt='%s', delimiter=config.trennzeichen, header=headers_string, comments='')
+            np.savetxt(file_path, messdaten_transponiert, fmt=config.datentyp, delimiter=config.trennzeichen, header=headers_string, comments='')
             print(f"Numpy-Matrix wurde in {file_path} gespeichert.")
 
 

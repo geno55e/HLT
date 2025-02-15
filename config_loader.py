@@ -13,10 +13,12 @@ class Config:
         self.tolerance_pseudostromquelle = None
         self.max_voltage_pseudostromquelle = None
         self.delay_messung = None
+        self.datentyp = None
         self.trennzeichen = None
         self.format_export = None
         self.window_height = None
         self.window_width = None
+
 
         # Lädt die Konfigurationswerte aus der Datei
         self.load_config()
@@ -36,6 +38,7 @@ class Config:
             self.max_iterations_pseudostromquelle = config.getint("Pseudostromquelle", "max_iterations", fallback=50)
             self.tolerance_pseudostromquelle = config.getfloat("Pseudostromquelle", "tolerance", fallback=0.001)
             self.max_voltage_pseudostromquelle = config.getfloat("Pseudostromquelle", "max_voltage", fallback=30)
+            self.datentyp = config.get("Messung", "datentyp", fallback='%s')
             self.delay_messung = config.getfloat("Messung", "delay_messung", fallback=0.5)
             self.format_export = config.get("Export", "format", fallback="csv")
             self.trennzeichen = config.get("Export", "trennzeichen", fallback=";")
@@ -57,6 +60,7 @@ class Config:
         max_iterations_pseudostromquelle = {self.max_iterations_pseudostromquelle}
         tolerance_pseudostromquelle = {self.tolerance_pseudostromquelle}
         max_voltage_pseudostromquelle = {self.max_voltage_pseudostromquelle}
+        datentyp = {self.datentyp}
         delay_messung = {self.delay_messung}
         trennzeichen = {self.trennzeichen}
         format_export = {self.format_export}
