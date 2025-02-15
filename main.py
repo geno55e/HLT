@@ -1366,7 +1366,12 @@ fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
 variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Compliance rechts", "Frequenz"]
-parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
+if config.pseudostromquelle_active:
+    parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
+    default_parameter = 4
+else:
+    parameter_options = ["Spannung links", "Spannung rechts", "ohne Parameter"]
+    default_parameter = 2
 
 # ###################################################################################################################################################
 
@@ -1601,7 +1606,7 @@ Combo_Parameter = ttk.Combobox(
     values=parameter_options,
     width=15
 )
-Combo_Parameter.current(4)
+Combo_Parameter.current(default_parameter)
 ToolTip(Combo_Parameter, msg="Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant), für den jeweils die Variable durchlaufen"
                              " wird. Der Wert, der in dem entsprechenden Bedienelement steht, wird ignoriert.")
 

@@ -7,6 +7,7 @@ class Config:
         self.address_power_source = None
         self.address_frequency_generator = None
         self.address_multimeter = None
+        self.pseudostromquelle_active = None
         self.step_size_pseudostromquelle = None
         self.max_iterations_pseudostromquelle = None
         self.tolerance_pseudostromquelle = None
@@ -30,6 +31,7 @@ class Config:
             self.address_power_source = config.get("Devices", "address_power_source", fallback='ASRL6::INSTR')
             self.address_frequency_generator = config.get("Devices", "address_frequency_generator", fallback='ASRL3::INSTR')
             self.address_multimeter = config.get("Devices", "address_multimeter", fallback='ASRL5::INSTR')
+            self.pseudostromquelle_active = config.getfloat("Pseudostromquelle", "pseudostromquelle_active", fallback=1)
             self.step_size_pseudostromquelle = config.getfloat("Pseudostromquelle", "step_size", fallback=0.05)
             self.max_iterations_pseudostromquelle = config.getint("Pseudostromquelle", "max_iterations", fallback=50)
             self.tolerance_pseudostromquelle = config.getfloat("Pseudostromquelle", "tolerance", fallback=0.001)
@@ -50,6 +52,7 @@ class Config:
         address_power_source = {self.address_power_source}
         address_frequency_generator = {self.address_frequency_generator}
         address_multimeter = {self.address_multimeter}
+        pseudostromquelle_active = {self.pseudostromquelle_active}
         step_size_pseudostromquelle = {self.step_size_pseudostromquelle}
         max_iterations_pseudostromquelle = {self.max_iterations_pseudostromquelle}
         tolerance_pseudostromquelle = {self.tolerance_pseudostromquelle}
