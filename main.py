@@ -1,15 +1,15 @@
-import VISAtestMode
-import tkinter as tk
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter import messagebox
-from tktooltip import ToolTip
-import numpy as np
-from time import sleep
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import Validation_functions as Vali
-from config_loader import Config
+import VISAtestMode # Protokoll und "Framework" für die Kommunikation mit Laborgeräten
+import tkinter as tk    # GUI
+from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
+from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
+from tktooltip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
+from tkinter import filedialog  # Speichern von Dateien
+import matplotlib.pyplot as plt # Darstellung von Plots
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # GUI Integration von matplotlib (Plotfenster) in tkinter (Hauptfenster)
+import numpy as np  # Erzeugung von Werten, Vektoren, Matrizen und Rechenoperationen
+from time import sleep  # Wartezeit zwischen Messungen
+import Validation_functions as Vali # Ausgelagerte Validierungsfunktionen für Überprüfung der Eingaben
+from config_loader import Config    # Config zur Einstellung der Standartwerte vor dem Start der Anwendung
 
 # LADE die Config mit den Pre-Sets, wenn Werte fehlen, werden Standartwerte aus config_loader.py verwendet
 config = Config()
@@ -297,6 +297,9 @@ def HM8150_Freq_OffsetOff():
 
 
 def HM8150_Freq_Toggle_Offset():
+    """
+    Schaltet die Offsetspannung ein oder aus abhängig von dem aktuellen Zustand.
+    """
     if Button_Offset_on_off_HM8150_Freq.cget("text") == 'Off':
         HM8150_Freq_OffsetOn()
         Button_Offset_on_off_HM8150_Freq["text"] = "On"
@@ -307,7 +310,7 @@ def HM8150_Freq_Toggle_Offset():
 
 def HM8150_Freq_OutputOn():
     """
-    Einschalten des Ausgangssignals
+    Einschalten des Ausgangs vom Frequenzgenerator
     """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
@@ -318,7 +321,7 @@ def HM8150_Freq_OutputOn():
 
 def HM8150_Freq_OutputOff():
     """
-    Ausschalten des Ausgangssignals.
+    Ausschalten des Ausgangssignals vom Frequenzgenerator
     """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
@@ -329,6 +332,9 @@ def HM8150_Freq_OutputOff():
 
 
 def HM8150_Freq_Toggle_Output():
+    """
+    Schaltet den Ausgang vom Frequenzgenerator ein oder aus abhängig von dem aktuellen Zustand.
+    """
     if Button_Output_on_off_HM8150_Freq.cget("text") == 'Off':
         HM8150_Freq_OutputOn()
         style.configure('freq.TButton', foreground='green')
@@ -365,7 +371,7 @@ def HM8150_Freq_Frequenz(frequenz):
 
 def HM8150_Freq_Offset(offset):
     """
-    Setze Offset
+    Setze Offset auf den angegebenen Wert
     :param offset: Offset in [V]
     """
     rm = VISAtestMode.ResourceManager()
@@ -377,6 +383,10 @@ def HM8150_Freq_Offset(offset):
 
 # Fluke Multimeter 8846a
 def ConvertMessbereichToDecimalString():
+    """
+    Wandelt den ausgewählten Messbereich in eine Zahl für Verarbeitung vom FLUKE um
+    :return: string Messbereich als Zahl ohne Einheit
+    """
     match Combo_Messbereich_Fluke.get():
         case "100uA":
             return "0.000001"
@@ -428,6 +438,10 @@ def ConvertMessbereichToDecimalString():
 
 
 def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
+    """
+    Setze die Auswahl des Messbereichs abhängig von der ausgewählen Messgröße
+    :param: string Messgröße
+    """
     match messgroesse_eingestellt:
         case "DC V" | "AC V":
             print("Spannung")
@@ -447,6 +461,9 @@ def Fluke_bestimme_Messbereich(messgroesse_eingestellt):
 
 
 def Widgets_sperren():
+    """
+    Sperre alle Eingabe-/Auswahl-Widgets während der Messung
+    """
     Eingabe_Spannung_links_HM8143_Quelle.configure(state='disabled')
     Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='disabled')
     Eingabe_Strom_links_HM8143_Quelle.configure(state='disabled')
@@ -477,6 +494,9 @@ def Widgets_sperren():
 
 
 def Widgets_entsperren():
+    """
+    Entsperre alle Eingabe-/Auswahl-Widgets nach der Messung
+    """
     Eingabe_Spannung_links_HM8143_Quelle.configure(state='normal')
     Eingabe_Spannung_rechts_HM8143_Quelle.configure(state='normal')
     Eingabe_Strom_links_HM8143_Quelle.configure(state='normal')
@@ -507,7 +527,9 @@ def Widgets_entsperren():
 
 
 def Aktualisiere_Widgets_Parameter(event=None):
-
+    """
+    Bei der Auswahl eines Parameters aktualisiere die Auswahl von der Variable (damit nicht der gleiche Ausgang gleichzeitig als Variable und Parameter ausgewählt werden kann)
+    """
     selected_variable = Combo_Variable.get()
     selected_parameter = Combo_Parameter.get()
 
@@ -532,8 +554,6 @@ def Aktualisiere_Widgets_Parameter(event=None):
                 Eingabe_Parameter.grid(column=1, row=5, sticky="W", columnspan=3, padx=5, pady=1)
                 Label_Eingabe_Parameter.grid(column=1, row=4, sticky="W", columnspan=3, padx=5, pady=1)
 
-
-
         case "ohne Parameter":
             Label_Startwert_Parameter.grid_forget()
             Label_Zielwert_Parameter.grid_forget()
@@ -548,6 +568,11 @@ def Aktualisiere_Widgets_Parameter(event=None):
 
 
 def Aktualisiere_Widgets_Parameter_Eingabe(parameter_einteilung):
+    """
+    Aktiviere dynamisch die Widgets für die Einteilung der Parameter.
+    linear, quadratisch, exponentiell → aktiviere Start, Ziel, Schritte
+    manuell → aktiviere Eingabefeld für Parameter
+    """
     match parameter_einteilung:
         case "linear" | "quadratisch" | "exponentiell":
             Label_Eingabe_Parameter.grid_forget()
@@ -570,6 +595,9 @@ def Aktualisiere_Widgets_Parameter_Eingabe(parameter_einteilung):
 
 
 def update_variable_options(event=None):
+    """
+    Bei der Auswahl einer Variable aktualisiere die Auswahl der Parameter (damit nicht der gleiche Ausgang gleichzeitig als Variable und Parameter ausgewählt werden kann)
+    """
     selected_variable = Combo_Variable.get()
     selected_parameter = Combo_Parameter.get()
 
@@ -587,6 +615,9 @@ def update_variable_options(event=None):
 
 
 def ConvertMessgroesseToSCPI():
+    """
+    Wandle die Auswahl der Messgröße in den SCPI-Befehl für FLUKE um (siehe Fluke Multimeter 8846a programming manual)
+    """
     match Combo_Messgroesse_Fluke.get():
         case "DC V":
             return "CONF:VOLT:DC "
@@ -601,6 +632,9 @@ def ConvertMessgroesseToSCPI():
 
 
 def setIntegrationTime():
+    """
+    Bestimme abhängig von der Auswahl der Messgröße die Integrationszeit (aus LabView übernommen, s.a. Fluke Multimeter 8846a programming manual)
+    """
     match Combo_Messgroesse_Fluke.get():
         case "DC V":
             return ":volt:dc:nplc 1"
@@ -620,13 +654,10 @@ def MessungStop():
     messungStop = True
 
 
-# def Fluke_Messe_Wert_test(v, p):
-#     gemessener_wert = simulate_mosfet_current(v_gate=p, v_drain=v, resistance_value=100)
-#
-#     return gemessener_wert
-
-
 def Geraete_lokal_bedienen():
+    """
+    Sperre alle Widgets falls die lokale Bedienung ausgewählt wird oder entsperre wenn die lokale Bedienung ausgeschaltet wird
+    """
     global geraete_lokal_on
     if geraete_lokal_on:
         # Wechsle zurück zu remote
@@ -696,6 +727,28 @@ def Geraete_lokal_bedienen():
 
 
 def Parameter_bestimmen():
+    """
+    - **`linear`**:
+     - Erstellt eine gleichmäßig verteilte Sequenz von Werten zwischen dem Start- und Zielwert mit `numpy.linspace`.
+
+    - **`quadratisch`**:
+     - Wendet eine quadratische Beziehung an:
+       - Die Start- und Zielwerte werden quadriert.
+       - Eine Sequenz wird basierend auf den quadrierten Werten erstellt.
+       - Anschließend werden die quadrierten Werte zurück in die Ursprungsdimension transformiert (Wurzel) und auf zwei Dezimalstellen gerundet.
+
+    - **`exponentiell`**:
+     - Wendet eine exponentielle Beziehung an:
+       - Die Start- und Zielwerte werden exponentiert.
+       - Eine Sequenz wird basierend auf den exponentiellen Werten erstellt.
+       - Anschließend erfolgt eine logarithmische Transformation der Werte, die ebenfalls auf zwei Dezimalstellen gerundet werden.
+
+    - **`manuell`**:
+     - Die Eingabe wird aus einem Textfeld gelesen und auf Basis eines Trennzeichens `;` in eine Liste umgewandelt.
+
+    3. **Fehlende Parameter**:
+       - Für den Fall, dass die Option `ohne Parameter` gewählt ist, gibt die Funktion `[1]` als Standardwert zurück.
+    """
     match Combo_Parameter.get():
         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
             match Combo_Parameter_Einteilung.get():
@@ -723,35 +776,6 @@ def Parameter_bestimmen():
         case "ohne Parameter":
             return [1]
 
-# Backup wegen Test ohne Umwandlung der Werte nach int um floatwerte eingeben zu können
-# def Parameter_bestimmen():
-#     match Combo_Parameter.get():
-#         case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
-#             match Combo_Parameter_Einteilung.get():
-#                 case "linear":
-#                     return np.linspace(int(Eingabe_Startwert_Parameter.get()), int(Eingabe_Zielwert_Parameter.get()),
-#                                        num=int(Eingabe_Schritte_Parameter.get()))
-#                 case "quadratisch":
-#                     i_min = np.square(int(Eingabe_Startwert_Parameter.get()))
-#                     i_max = np.square(int(Eingabe_Zielwert_Parameter.get()))
-#                     step = Eingabe_Schritte_Parameter.get()
-#                     i_vec = np.linspace(i_min, i_max, num=int(step))
-#                     para = np.sqrt(i_vec)
-#                     para = np.round(para, decimals=2)
-#                     return para
-#                 case "exponentiell":
-#                     i_min = np.exp(int(Eingabe_Startwert_Parameter.get()))
-#                     i_max = np.exp(int(Eingabe_Zielwert_Parameter.get()))
-#                     step = Eingabe_Schritte_Parameter.get()
-#                     i_vec = np.linspace(i_min, i_max, num=int(step))
-#                     para = np.log(i_vec)
-#                     para = np.round(para, decimals=2)
-#                     return para
-#                 case "manuell":
-#                     return Eingabe_Parameter.get().split(";")
-#         case "ohne Parameter":
-#             return [1]
-
 
 def make_headers_unique(heads):
     """Funktion, um doppelte Werte in headers eindeutig zu machen."""
@@ -770,6 +794,11 @@ def make_headers_unique(heads):
 
 
 def Create_table(headers_para, var):
+    """
+    Initialisiert die Anzeige (Tabelle) der Messwerte.
+    :param headers_para: Überschriften der Spalten
+    :param var: Berechneten/bestimmten Variablen (erste Spalte)
+    """
     global Tabelle
     global h_scrollbar
 
@@ -783,7 +812,7 @@ def Create_table(headers_para, var):
     Tabelle.column("#0", anchor=tk.CENTER, width=150, stretch=tk.NO)  # Zentrierte Ausrichtung
     Tabelle.heading("#0", text="Variable", anchor=tk.CENTER)  # Überschrift ebenfalls zentriert
 
-    # Konfigurieren der zusätzlichen Spalten aus der headers-Liste
+    # Konfigurieren der restlichen Spalten aus der headers-Liste
     Tabelle['columns'] = headers_para
     for header in headers_para:
         Tabelle.column(header, anchor=tk.CENTER, width=100)  # Zentrierte Ausrichtung für zusätzliche Spalten
@@ -795,18 +824,26 @@ def Create_table(headers_para, var):
 
     # Tabelle und Scrollbar anzeigen
     Tabelle.pack(fill='both', expand=True, padx=10, pady=10)
-
     h_scrollbar.pack(side='bottom', fill='x')
     Tabelle.configure(xscrollcommand=h_scrollbar.set)
 
 
 def Wert_in_Tabelle_einfuegen(row_id, column, value):
+    """
+    Füge einen Messwert in die Tabelle ein.
+    :param row_id: Zeilennummer wo der Messwert eingefügt werden soll
+    :param column: Spalte wo der Messwert eingefügt werden soll
+    :param value: Messwert der eingefügt werden soll
+    """
     global Tabelle
     # Hier wird der Wert in eine spezifische Zelle gesetzt
     Tabelle.set(row_id, column=column, value=value)
 
 
 def Save_Messdaten_to_File():
+    """
+    Öffnet ein Dialog zum Speichern der Messdaten. Format und Datentypen können über die config eingestellt werden
+    """
     global messdaten
     global headers
     if messdaten.size > 0 and headers.size > 0:
@@ -821,6 +858,10 @@ def Save_Messdaten_to_File():
 
 
 def Fluke_reset():
+    """
+    # This clears all error prior to initiating readings (siehe Fluke Multimeter 8846a programming manual).
+    Verhindert leider nicht den sporadisch auftretenden Kommunikationsfehler.
+    """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource(config.address_multimeter, read_termination='\r\n', query_delay=0.21)
     my_instrument.write('*RST;*CLS;syst:local')
@@ -828,6 +869,9 @@ def Fluke_reset():
 
 
 def Fluke_set_Range():
+    """
+    Aktiviert anhand von Messwert und Messbereich den dazugehörigen Messmodus vom Fluke
+    """
     # Messgröße Fluke
     # vdc = "CONF:VOLT:DC "
     # vac = "CONF:VOLT:AC "
@@ -844,7 +888,7 @@ def Fluke_set_Range():
 
     # Trigger
     # trig = ":TRIG:DEL 0"
-    trig = ":TRIG:SOUR BUS"
+    trig = ":TRIG:SOUR BUS" # Aus LabView übernommen
     # trig = ":TRIG:SOUR IMM"
 
     # Commands Fluke
@@ -862,12 +906,14 @@ def Fluke_set_Range():
     my_instrument.write(set_range)
     # gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?')) # Wandle nach float und speichere gemessenen Wert
     # print("MESSUNG: " + str(gemessener_wert) + messgroesse)
-    # my_instrument.write('*RST;*CLS;syst:local')
     my_instrument.close()
 
 
 def Fluke_Messe_Wert_live():
-    # zum TESTEN auskommentiert
+    """
+    Messe Wert mit dem Fluke Multimeter und gebe den gemessenen Wert (Antwort vom Fluke) zurück.
+    :return: float mit gemessenen Wert
+    """
     rm = VISAtestMode.ResourceManager()
     my_instrument = rm.open_resource(config.address_multimeter, read_termination='\r\n', query_delay=0.3)
     gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?'))  # Wandle nach float und speichere gemessenen Wert
@@ -877,14 +923,13 @@ def Fluke_Messe_Wert_live():
 
 
 # Hauptfunktionen
-def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step_size=0.05, max_iterations=50, tolerance=0.001, max_voltage=30,
+def regulate_current_links(target_current: float, var_i, step_size=0.05, max_iterations=50, tolerance=0.001, max_voltage=30,
                      min_voltage=0.0, ):
     """
-    Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
+    Regelt die linke Spannung, um den Zielstrom (target_current) innerhalb der Toleranz und nach max_iterations zu erreichen.
 
     :param target_current: Der gewünschte Strom in A.
     :param var_i: Aktueller Var-Schritt (nur beim ersten Var wird Strombegrenzung gesetzt)
-    :param start_voltage: Anfangsspannung für die Regelung.
     :param step_size: Schrittweite, um die Spannung anzupassen.
     :param max_iterations: Maximale Anzahl an Regelversuchen.
     :param tolerance: Die zulässige Abweichung vom Zielstrom (±0.001 A).
@@ -900,7 +945,7 @@ def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step
 
     if var_i == 0:
         HM8143_Quelle_StromBegrenzLinks(
-            target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
+            target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset wegen statischer Abweichung Anzeige ↔ Messung
         HM8143_Quelle_AusgangOn()
         step_size = 1
         sleep(0.3)
@@ -911,7 +956,7 @@ def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step
     current = get_current()
     error = round((target_current - current), 3)
     if not HM8143_IstAusgangInCC(ausgang=1) and abs(
-            error) <= tolerance:  # Wenn Strom bereits innerhalb der Toleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue Einstellung)
+            error) <= tolerance:  # Wenn Strom bereits innerhalb der Toleranz ist → nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue Einstellung)
         return None
 
     # Starte die Regelung der Spannung
@@ -945,7 +990,7 @@ def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step
         #     current_voltage += step_size
 
         elif current < target_current:
-            # print(f"Strom zu niedrig: {current} < Target {target_current} | Abweichung: {error} -> erhöhe um {step_size}")
+            # print(f"Strom zu niedrig: {current} < Target {target_current} | Abweichung: {error} → erhöhe um {step_size}")
             # Strom zu niedrig → Spannung erhöhen
             current_voltage += step_size
             iterations += 1
@@ -968,14 +1013,13 @@ def regulate_current_links(target_current: float, var_i, start_voltage=0.0, step
             HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + "), Aktueller Strom: " + HM8143_Quelle_ZeigeStromLinks())
 
 
-def regulate_current_rechts(target_current: float, var_i, start_voltage=0.0, step_size=0.05, max_iterations=50, tolerance=0.001, max_voltage=30,
+def regulate_current_rechts(target_current: float, var_i, step_size=0.05, max_iterations=50, tolerance=0.001, max_voltage=30,
                      min_voltage=0.0, ):
     """
-    Regelt die Spannung, um den Zielstrom (target_current) innerhalb der Toleranz zu erreichen.
+    Regelt die linke Spannung, um den Zielstrom (target_current) innerhalb der Toleranz und nach max_iterations zu erreichen.
 
     :param target_current: Der gewünschte Strom in A.
     :param var_i: Aktueller Var-Schritt (nur beim ersten Var wird Strombegrenzung gesetzt)
-    :param start_voltage: Anfangsspannung für die Regelung.
     :param step_size: Schrittweite, um die Spannung anzupassen.
     :param max_iterations: Maximale Anzahl an Regelversuchen.
     :param tolerance: Die zulässige Abweichung vom Zielstrom (±0.001 A).
@@ -991,7 +1035,7 @@ def regulate_current_rechts(target_current: float, var_i, start_voltage=0.0, ste
 
     if var_i == 0:
         HM8143_Quelle_StromBegrenzRechts(
-            target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset drauf wegen statischer Abweichung Anzeige <-> Messung
+            target_current + 0.001)  # Setze die Strombegrenzung auf den gewünschten Wert (zur Absicherung), 0.001 Offset wegen statischer Abweichung Anzeige ↔ Messung
         HM8143_Quelle_AusgangOn()
         step_size = 1
         sleep(0.3)
@@ -1002,7 +1046,7 @@ def regulate_current_rechts(target_current: float, var_i, start_voltage=0.0, ste
     current = get_current()
     error = round((target_current - current), 3)
     if not HM8143_IstAusgangInCC(ausgang=2) and abs(
-            error) <= tolerance:  # Wenn Strom bereits innerhalb der Tolleranz ist -> nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue EInstellung)
+            error) <= tolerance:  # Wenn Strom bereits innerhalb der Toleranz ist → nichts machen (um Schwankungen zu verhindern sonst bei jeden MEsspunkt neue Einstellung)
         return None
 
     # Starte die Regelung der Spannung
@@ -1065,7 +1109,7 @@ def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestell
     ausgewählt wurde, wird eine Meldung ausgegeben, bei OK → True und bei Abbrechen → False
     :param messgroesse_eingestellt: ausgewählte Messgröße
     :param messbereich_eingestellt: ausgewählter Messbereich
-    :return: Bool
+    :return: Bool von der Interaktion mit dem AskOkCancel-Fenster
     """
     if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "400mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr! Ab "
@@ -1077,7 +1121,9 @@ def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestell
 
 
 def toggle_x_scale():
-    """Wechselt die Skala der x-Achse zwischen linear und logarithmisch."""
+    """
+    Wechselt die Skala der x-Achse zwischen linear und logarithmisch.
+    """
     current_scale = ax.get_xscale()
     if current_scale == 'linear':
         ax.set_xscale('log')
@@ -1089,7 +1135,9 @@ def toggle_x_scale():
 
 
 def toggle_y_scale():
-    """Wechselt die Skala der y-Achse zwischen linear und logarithmisch."""
+    """
+    Wechselt die Skala der y-Achse zwischen linear und logarithmisch.
+    """
     current_scale = ax.get_yscale()
     if current_scale == 'linear':
         ax.set_yscale('log')
@@ -1101,6 +1149,9 @@ def toggle_y_scale():
 
 
 def Messung():
+    """
+    Hauptfunktion die beim Start der Messung ausgeführt wird:
+    """
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
     HM8143_Quelle_AusgangOff()
@@ -1146,18 +1197,19 @@ def Messung():
         Widgets_entsperren()
         return
 
+    # Wandle die Eingaben in float um und erzeuge die Variablen anhand der Werte
     start = float(Eingabe_Startwert_Variable.get())
     schritt = float(Eingabe_Schrittweite_Variable.get())
     ziel = float(Eingabe_Zielwert_Variable.get())
     start_schritt_ziel = np.linspace(start, ziel, num=int((ziel - start) / schritt))
     start_schritt_ziel = np.round(start_schritt_ziel, decimals=2)
 
-    global var_x
-    global mess_y
-    global x_i
-    global messungStop
-    global messdaten
-    global headers
+    global var_x    # Vor jeder Messung wird die nächste Variable zu der Liste hinzugefügt, damit der Plot live aufgebaut werden kann (x-Achse)
+    global mess_y   # Nach jeder Messung wird der gemessene Wert zu der Liste hinzugefügt, damit der Plot live aufgebaut werden kann (y-Achse)
+    global x_i  # Index in der Variablen-Liste für die while-Schleifen
+    global messungStop  # Zur Prüfung des Stop-Buttons
+    global messdaten    # Speicher für die komplette Messung inkl. Variable
+    global headers  # Überschriften für die Tabelle, Plot und Export der Daten
 
     var_x = []
     mess_y = []
@@ -1165,7 +1217,7 @@ def Messung():
     messungStop = False
 
 
-    para = Parameter_bestimmen()
+    para = Parameter_bestimmen()    # Erzeuge die Parameter anhand der ausgewählten Parametereinteilung
 
     # Initialisierung Progressbar
     messwerte_insgesamt = int((ziel - start) / schritt) * len(para)
@@ -1189,18 +1241,20 @@ def Messung():
     # Tabelle wird erstellt
     Create_table(headers, list(start_schritt_ziel))
 
-    # Transponiere Variable
+    # Transponiere Variable und füge das als erste Spalte an die Messdaten
     messdaten = np.transpose(start_schritt_ziel)
 
-    p_i = 0
+    p_i = 0 # Index für den aktuellen Parameter in der Parameterliste für die Schleife
     progress = 0
 
+    # Äußere Schleife für jeden Parameter-Wert (wenn ohne Parameter = 1 → ein Durchlauf)
     while (p_i < len(para)) and (not messungStop):  # gehe Parameter durch
         var_x = []
         mess_y = []
         x_i = 0
         para_now = para[p_i]
 
+        # Setze die Werte aus der GUI und den Parameter
         if Combo_Parameter.get() != "ohne Parameter":
             match Combo_Parameter.get():
                 case "Spannung links":
@@ -1256,7 +1310,7 @@ def Messung():
                             messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler",
                                                  "Fehler bei der Kommunikation mit "
                                                  "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
-                            break  # Verlässt die while-Schleife
+                            break  # Verlässt die Mess-Schleife
                         # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                         # HM8143_Quelle_AusgangOn()
                     case "Strom rechts":
@@ -1267,7 +1321,7 @@ def Messung():
                             messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler",
                                                  "Fehler bei der Kommunikation mit "
                                                  "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
-                            break  # Verlässt die while-Schleife
+                            break  # Verlässt die Mess-Schleife
 
                         # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                         # HM8143_Quelle_AusgangOn()
@@ -1291,7 +1345,8 @@ def Messung():
                 messungStop = True
                 messagebox.showerror("FLUKE Kommunikationsfehler", "Fehler bei der Kommunikation mit "
                                                                    "Fluke Multimeter 8846A")
-                break  # Verlässt die while-Schleife
+                Fluke_reset()   # Zum Testen, damit nach einer Exception der Fehlerspeicher vom Fluke gelöscht wird
+                break  # Verlässt die Mess-Schleife
 
             # DEBUG Ausgabe auf Konsole
             try:
@@ -1308,8 +1363,7 @@ def Messung():
                 messungStop = True
                 messagebox.showerror("HM8143 Spannungsquelle Kommunikationsfehler", "Fehler bei der Kommunikation mit "
                                                                    "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
-                break  # Verlässt die while-Schleife
-
+                break  # Verlässt die Mess-Schleife
 
 
             mess_y.append(wert_gemessen)
@@ -1327,7 +1381,6 @@ def Messung():
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
-
 
 
         # Wenn Messung gestoppt wird und mess_y weniger Werte als Zeilen in messdaten hat, werden die fehlenden Werte mit -1 aufgefüllt
@@ -1350,13 +1403,13 @@ def Messung():
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
-headers = np.array([])
-messdaten = np.array([])
-x_i = 0
-var_x = []
-mess_y = []
-messungStop = False
-geraete_lokal_on = False
+headers = np.array([])  # Überschriften für die Tabelle, Plot und Export der Daten
+messdaten = np.array([])    # Speicher für die komplette Messung inkl. Variable
+x_i = 0 # Index in der Variablen-Liste für die while-Schleifen
+var_x = []  # Vor jeder Messung wird die nächste Variable zu der Liste hinzugefügt, damit der Plot live aufgebaut werden kann (x-Achse)
+mess_y = [] # Nach jeder Messung wird der gemessene Wert zu der Liste hinzugefügt, damit der Plot live aufgebaut werden kann (y-Achse)
+messungStop = False # Zur Prüfung des Stop-Buttons
+geraete_lokal_on = False # Zur Prüfung des Geräte-lokal-bedienen-Buttons
 
 
 window_height = config.window_height
@@ -1381,7 +1434,7 @@ else:
                      "- die Variablen werden für jeden Parameter wiederholt durchlaufen.\n- der Wert in dem entsprechenden "
                      "Bedienelement wird ignoriert.")
 
-# ###################################################################################################################################################
+# #####################################################################################################################
 
 
 # Instanziiere das Hauptfenster'
@@ -1718,7 +1771,7 @@ ax.grid()
 ax.set_xscale('linear')  # Standardmäßig lineare Skalierung
 ax.set_yscale('linear')  # Standardmäßig lineare Skalierung
 
-canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)
+canvas = FigureCanvasTkAgg(fig, master=Frame_Plot)  # Erzeuge Canvas für den Plot
 canvas.get_tk_widget().pack(fill='both', expand=True)
 
 Button_y_Achse_toggle = ttk.Button(Frame_Plot, text="Y-linear", command=toggle_y_scale)
@@ -1745,8 +1798,11 @@ HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())
 # Initialisiere Fluke (setzte die default Werte aus der Combo und den Entries)
 Fluke_set_Range()
 
-# Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
+
 def closing_cbk():
+    """
+    Zum ordentlichen Beenden des Programms, wenn man das Hauptfenster schließt
+    """
     HM8143_Quelle_AusgangOff()
     HM8143_Quelle_remoteOff()
     HM8150_Freq_OutputOff()
