@@ -1254,7 +1254,7 @@ def Messung():
         x_i = 0
         para_now = para[p_i]
 
-        # Setze die Werte aus der GUI und den Parameter
+        # Setze die Werte aus der GUI und den Parameter abhängig von der Auswahl des Parameters
         if Combo_Parameter.get() != "ohne Parameter":
             match Combo_Parameter.get():
                 case "Spannung links":
@@ -1280,6 +1280,7 @@ def Messung():
 
         sleep(1)  # Wartezeit nach Setzen von Parameter
 
+        # Setze die Variable anhand der Auswahl
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
             match Combo_Variable.get():
                 case "Spannung links":
@@ -1300,8 +1301,9 @@ def Messung():
                     HM8143_Quelle_StromBegrenzRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_AusgangOn()
 
+            # Stromsteuerung während der Messreihe (Strom wird nach jeder Variablen nachgeregelt) + Fehlerbehandlung
             if Combo_Parameter.get() != "ohne Parameter":
-                match Combo_Parameter.get():    # restlichen Parameter noch rein machen
+                match Combo_Parameter.get():
                     case "Strom links":
                         try:
                             regulate_current_links(target_current=float(para_now), var_i=x_i)
@@ -1333,7 +1335,8 @@ def Messung():
             ax.clear()
             ax.grid()
 
-            for p_fertig in range(p_i):  # Ab den zweiten Parameter, gib die Kurven davor sofort aus
+            # Ab den zweiten Parameter, gib die Plots von allen Parametern, die vorher durchlaufen wurden, aus
+            for p_fertig in range(p_i):
                 ax.plot(start_schritt_ziel, messdaten[p_fertig + 1, :], '--.', linewidth=0.4, markersize=1)
                 canvas.draw()
             var_x.append(start_schritt_ziel[x_i,])
@@ -1365,19 +1368,24 @@ def Messung():
                                                                    "HM8143 Spannungsquelle (Gerät ist ausgeschaltet oder nicht erreichbar)")
                 break  # Verlässt die Mess-Schleife
 
-
+            # Füge Messwert an den aktuellen Messliste an
             mess_y.append(wert_gemessen)
 
+            # Füge Messwert in Tabelle ein
             Wert_in_Tabelle_einfuegen(row_id=x_i, column=headers[p_i], value=wert_gemessen)  # Tabelle Live
+            # Plotte alle bis zu dem Messzeitpunkt gemessenen Werte über der Variable
             ax.plot(var_x, mess_y, marker=".", markersize=3, linewidth=1)
             ax.set_xlabel(Combo_Variable.get())
             ax.set_ylabel('Fluke ' + Combo_Messgroesse_Fluke.get())
+            # Aktualisiere Plot (nötig da eingebunden in Tkinter)
             canvas.draw()
             master.update()
+            # Erhöhe die Durchlaufvariable und aktualisiere den Fortschrittsbalken
             x_i += 1
             progress += 1
             progressbar['value'] = progress  # Progress um eins erweitern
 
+        # Wenn Messung nicht gestoppt wurde, soll die Parameter-Durchlaufvariable erhöht werden
         if not messungStop:
             messdaten = np.vstack((messdaten, mess_y))  # Füge den durchlauf zu den Messdaten hinzu
             p_i += 1
@@ -1390,12 +1398,12 @@ def Messung():
 
             # Auffüllen mit -1
             mess_y.extend([-1] * missing_length)
-
+            # Füge die aufgefüllte Messreihe an die Messdaten an
             messdaten = np.vstack((messdaten, mess_y))
 
     # Routine nach der letzten Messung
-    ax.legend(headers)
-    canvas.draw()
+    ax.legend(headers)  # Füge Legende aus den Tabellenköpfen ein
+    canvas.draw()   # Aktualisiere Plot
     headers = np.append(['Variable'], headers)  # Füge Bezeichner Variable an Kopf an
     HM8143_Quelle_AusgangOff()
     HM8150_Freq_OutputOff()
@@ -1411,7 +1419,7 @@ mess_y = [] # Nach jeder Messung wird der gemessene Wert zu der Liste hinzugefü
 messungStop = False # Zur Prüfung des Stop-Buttons
 geraete_lokal_on = False # Zur Prüfung des Geräte-lokal-bedienen-Buttons
 
-
+# Vordefinierte Werte für die Breite und Höhe des Hauptfensters
 window_height = config.window_height
 window_width = config.window_width
 
@@ -1419,6 +1427,8 @@ fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
 fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
 variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Compliance rechts", "Frequenz"]
+
+# Prüfe, ob die Pseudostromquelle in der Parameterauswahl angezeigt werden soll
 if config.pseudostromquelle_active:
     parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
     default_parameter = 4
@@ -1438,19 +1448,21 @@ else:
 
 
 # Instanziiere das Hauptfenster'
-master = tk.Tk()
+master = tk.Tk()    # Erzeuge das Hauptfenster
 # master.geometry("1500x560")
-master.geometry(str(window_width) + "x" + str(window_height))
+master.geometry(str(window_width) + "x" + str(window_height))   # Parametrisiere das Hauptfenster
 master.title("HalbleiterLeitTechnik")
 
+# Funktionen für die direkte Validierung der Eingaben innerhalb der Spezifikationen von der HAMEG Spannungsquelle
 vcmd_voltage = master.register(Vali.validation_entry_voltage)
 vcmd_current = master.register(Vali.validation_entry_current)
 
-
+# Erzeuge die Subframes im Hauptfenster
 Frame_Steuerung = ttk.Frame(master)
 Frame_Plot = ttk.Frame(master)
 Frame_Tabelle = ttk.Frame(master)
 
+# Platziere die Subframes
 Frame_Steuerung.place(x=0, y=0, relwidth=0.23, relheight=1)
 Frame_Plot.place(relx=0.23, y=0, relwidth=0.45, relheight=1)
 Frame_Tabelle.place(relx=0.68, y=0, relwidth=0.32, relheight=1)
@@ -1458,6 +1470,7 @@ Frame_Tabelle.place(relx=0.68, y=0, relwidth=0.32, relheight=1)
 Tabelle = ttk.Treeview(Frame_Tabelle, selectmode='browse')
 h_scrollbar = ttk.Scrollbar(Frame_Tabelle, orient=tk.HORIZONTAL, command=Tabelle.xview)
 
+# Für die dynamische Einfärbung der Buttons (on/off)
 style = ttk.Style()
 
 # Lokal
