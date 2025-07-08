@@ -1,4 +1,4 @@
-import VISAtestMode # Protokoll und "Framework" für die Kommunikation mit Laborgeräten
+import pyvisa # Protokoll und "Framework" für die Kommunikation mit Laborgeräten
 import tkinter as tk    # GUI
 from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
 from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
@@ -20,7 +20,7 @@ def HM8143_Quelle_remoteOn():
     Einschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente werden gesperrt. Eine Bedienung des Netzgeräts kann jetzt
     nur noch mit dem Interface erfolgen.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('RM1')
     my_instrument.close()
@@ -30,7 +30,7 @@ def HM8143_Quelle_remoteOff():
     """
     Ausschalten des Remote-Zustandes von der HAMEG Spannungsquelle. Die Frontbedienelemente sind entsperrt.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
     my_instrument.close()
@@ -41,7 +41,7 @@ def HM8143_Quelle_SpannungLinks(spannung):
     Setze Spannung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
     :param spannung: Spannung in [V] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     # print('SU1:' + str(spannung))
     my_instrument.write('SU1:' + str(spannung))
@@ -53,7 +53,7 @@ def HM8143_Quelle_SpannungRechts(spannung):
     Setze Spannung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (spannung)
     :param spannung: Spannung in [V] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     # print('SU2:' + str(spannung))
     my_instrument.write('SU2:' + str(spannung))
@@ -65,7 +65,7 @@ def HM8143_Quelle_StromBegrenzLinks(strom):
     Setze Strombegrenzung 1 (links) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
     :param strom: Strom in [A] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('SI1:' + str(strom))
     my_instrument.close()
@@ -76,7 +76,7 @@ def HM8143_Quelle_StromBegrenzRechts(strom):
     Setze Strombegrenzung 2 (rechts) von der HAMEG Spannungsquelle auf den angegebenen Wert (strom)
     :param strom: Strom in [A] die eingestellt werden soll.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('SI2:' + str(strom))
     my_instrument.close()
@@ -86,7 +86,7 @@ def HM8143_Quelle_AusgangOn():
     """
     Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden eingeschaltet.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('OP1')
     my_instrument.close()
@@ -97,7 +97,7 @@ def HM8143_Quelle_AusgangOff():
     """
     Die Ausgangsbuchsen von der HAMEG Spannungsquelle werden ausgeschaltet.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
     my_instrument.close()
@@ -122,7 +122,7 @@ def HM8143_Quelle_ZeigeStromLinks():
     (links).
     :return: String 0.000
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     strom_links = my_instrument.query('MI1')
     my_instrument.close()
@@ -135,7 +135,7 @@ def HM8143_Quelle_ZeigeStromRechts():
     (rechts).
     :return: String 0.000
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     strom_rechts = my_instrument.query('MI2')
     my_instrument.close()
@@ -148,7 +148,7 @@ def HM8143_Quelle_ZeigeSpannungLinks():
     zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('MU1')
     my_instrument.close()
@@ -161,7 +161,7 @@ def HM8143_Quelle_ZeigeSpannungRechts():
     zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('MU2')
     my_instrument.close()
@@ -173,7 +173,7 @@ def HM8143_Quelle_ZeigeSpannungLinksGesetzt():
     Gebe den Soll-Spannungswert (eingestellt) am Ausgang 1 (links) zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     spannung_links = my_instrument.query('RU1')
     my_instrument.close()
@@ -185,7 +185,7 @@ def HM8143_Quelle_ZeigeSpannungRechtsGesetzt():
     Gebe den Soll-Spannungswert (eingestellt) am Ausgang 2 (rechts) zurück.
     :return: float 0.00
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     spannung_rechts = my_instrument.query('RU2')
     my_instrument.close()
@@ -197,7 +197,7 @@ def HM8143_Quelle_Status():
     Gibt einen String zurück (OP1/0 CV1/CC1 CV2/CC2 RM0/1), der Auskunft über den momentanen Gerätestatus gibt.
     :return: OP1/0 CV1/CC1 CV2/CC2 RM0/1
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     status = my_instrument.query('STA?')
     my_instrument.close()
@@ -210,7 +210,7 @@ def HM8143_IstAusgangInCC(ausgang):
     :param ausgang: Der Ausgang welcher abgefragt werden soll: links = 1 oder rechts = 2.
     :return: bool
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     status_powersup = my_instrument.query('STA')
 
@@ -238,7 +238,7 @@ def HM8150_Freq_remoteOff():
     Ausschalten des Remote-Zustandes von des HAMEG Funktionsgenerators. Die Frontbedienelemente werden entsperrt. Eine Bedienung des Netzgeräts kann
     jetzt mit dem Interface erfolgen.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('RM0')
     my_instrument.close()
@@ -250,7 +250,7 @@ def HM8150_Freq_Wellenform(wellenform):
     :param wellenform: SIN: Sinus, TRI: Dreieck, PLS: Impuls, RMP: Sägezahn (positiv), RMN Sägezahn (negativ), ARB: Arbitary
     """
     print("Wellenform ausgewählt: " + wellenform)
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OP0')
 
@@ -280,7 +280,7 @@ def HM8150_Freq_OffsetOn():
     """
     Einschalten der Offsetspannung
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OF1')
     my_instrument.close()
@@ -290,7 +290,7 @@ def HM8150_Freq_OffsetOff():
     """
     Ausschalten der Offsetspannung
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OF0')
     my_instrument.close()
@@ -312,7 +312,7 @@ def HM8150_Freq_OutputOn():
     """
     Einschalten des Ausgangs vom Frequenzgenerator
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OT1')
     my_instrument.close()
@@ -323,7 +323,7 @@ def HM8150_Freq_OutputOff():
     """
     Ausschalten des Ausgangssignals vom Frequenzgenerator
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OT0')
     my_instrument.close()
@@ -350,7 +350,7 @@ def HM8150_Freq_Amplitude(amplitude):
     Setze die Amplitude auf den angegebenen Wert
     :param amplitude: Amplitude 00.00 in [V]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('AMP:' + str(amplitude))
     my_instrument.write('DAM')
@@ -362,7 +362,7 @@ def HM8150_Freq_Frequenz(frequenz):
     Setze die Frequenz auf den angegebenen Wert
     :param frequenz: Frequenz 0.0000 in [kHz]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('FRQ:' + str(frequenz))
     my_instrument.write('DFR')
@@ -374,7 +374,7 @@ def HM8150_Freq_Offset(offset):
     Setze Offset auf den angegebenen Wert
     :param offset: Offset in [V]
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_frequency_generator, write_termination='\r', read_termination='\r')
     my_instrument.write('OFS:' + str(offset))
     my_instrument.write('DOF')
@@ -399,9 +399,6 @@ def ConvertMessbereichToDecimalString():
 
         case "100mV" | "100mA":
             return "0.1"
-
-        case "400mA":
-            return "0.4"
 
         case "1V" | "1A":
             return "1"
@@ -862,7 +859,7 @@ def Fluke_reset():
     # This clears all error prior to initiating readings (siehe Fluke Multimeter 8846a programming manual).
     Verhindert leider nicht den sporadisch auftretenden Kommunikationsfehler.
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_multimeter, read_termination='\r\n', query_delay=0.21)
     my_instrument.write('*RST;*CLS;syst:local')
     my_instrument.close()
@@ -899,7 +896,7 @@ def Fluke_set_Range():
     integrationszeit = setIntegrationTime().upper()
     print(messgroesse + messbereich + integrationszeit + trig)
 
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_multimeter, read_termination='\r\n', query_delay=0.21)
     set_range = '*RST;*CLS;' + messgroesse + str(messbereich) + ';' + integrationszeit + ';' + trig
     print(set_range)
@@ -914,7 +911,7 @@ def Fluke_Messe_Wert_live():
     Messe Wert mit dem Fluke Multimeter und gebe den gemessenen Wert (Antwort vom Fluke) zurück.
     :return: float mit gemessenen Wert
     """
-    rm = VISAtestMode.ResourceManager()
+    rm = pyvisa.ResourceManager()
     my_instrument = rm.open_resource(config.address_multimeter, read_termination='\r\n', query_delay=0.3)
     gemessener_wert = float(my_instrument.query(':INIT;*TRG;FETCH?'))  # Wandle nach float und speichere gemessenen Wert
     my_instrument.close()
@@ -1111,10 +1108,10 @@ def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestell
     :param messbereich_eingestellt: ausgewählter Messbereich
     :return: Bool von der Interaktion mit dem AskOkCancel-Fenster
     """
-    if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "400mA", "1A", "3A", "10A"):
+    if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr! Ab "
                                                       "100mA auf richtigen Anschluss beim Fluke achten!")
-    if messbereich_eingestellt in ("100mA", "400mA", "1A", "3A", "10A"):
+    if messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, ab 100mA auf richtigen Anschluss beim Fluke achten!")
     if messgroesse_eingestellt in ("DC I", "AC I"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr!")
@@ -1424,7 +1421,7 @@ window_height = config.window_height
 window_width = config.window_width
 
 fluke_Messbereich_Spannung = ["100mV", "1V", "10V", "100V", "1000V"]
-fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "400mA", "1A", "3A", "10A"]
+fluke_Messbereich_Strom = ["100uA", "1mA", "10mA", "100mA", "1A", "3A", "10A"]
 fluke_Messbereich_Widerstand = ["10 Ohm", "100 Ohm", "1k Ohm", "10k Ohm", "100k Ohm", "1M Ohm", "100M Ohm", "1G Ohm"]
 variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Compliance rechts", "Frequenz"]
 
