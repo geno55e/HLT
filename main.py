@@ -1326,7 +1326,8 @@ def Messung():
                         # HM8143_Quelle_AusgangOn()
 
             # Wartezeit zwischen Messungen einstellbar
-            sleep(config.delay_messung/float(Combo_Messdelay.get()[1:]))
+            messdelay = config.delay_messung/float(Combo_Messdelay.get()[1:])
+            sleep(messdelay)
 
             # Speichere Daten und aktualisiere Plot
             ax.clear()
@@ -1756,13 +1757,13 @@ Eingabe_Schritte_Parameter.grid(column=3, row=5, padx=5, pady=1)
 Combo_Messdelay = ttk.Combobox(
     Frame_Messung,
     state="readonly",
-    values=["x0.5", "x1", "x2", "x3", "x4", "x5"],
+    values=["x0.5", "x1", "x2", "x5", "x9"],
     width=5
 )
 Combo_Messdelay.current(3)
 Combo_Messdelay.grid(column=0, row=6, padx=5, pady=3)
 ToolTip(Combo_Messdelay, msg="Messgeschwindigkeit (Wartezeit zwischen den Messungen): \n"
-                             "x0.5 = 1,2s, x1 = 600ms, x2 = 300ms, x3 = 200ms, x4 = 125ms, x5 = 100ms")
+                             "x0.5 = 1,2s, x1 = 600ms, x2 = 300ms, x5 = 100ms, x9")
 
 Button_Start_Messung.grid(column=1, row=6, padx=5, pady=3)
 ToolTip(Button_Start_Messung, msg="Hier wird die Messung gestartet. Die Ausgänge des Netzgerätes und des Frequenzgenerators werden automatisch "
