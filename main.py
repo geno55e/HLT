@@ -543,7 +543,7 @@ def Aktualisiere_Widgets_Parameter(event=None):
         Combo_Variable.set('')  # Reset if current value is no longer valid
 
     match selected_parameter:
-        case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
+        case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts" | "Compliance links" | "Compliance rechts":
             # Combo_Parameter_Einteilung.current(3)
             Combo_Parameter_Einteilung.grid(column=0, row=5, sticky="W", padx=5, pady=1)
             Label_Parameter_Einteilung.grid(column=0, row=4, sticky="W", padx=5, pady=1)
@@ -747,7 +747,7 @@ def Parameter_bestimmen():
        - Für den Fall, dass die Option `ohne Parameter` gewählt ist, gibt die Funktion `[1]` als Standardwert zurück.
     """
     match Combo_Parameter.get():
-        case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts":
+        case "Spannung links" | "Spannung rechts" | "Strom links" | "Strom rechts" | "Compliance links" | "Compliance rechts":
             match Combo_Parameter_Einteilung.get():
                 case "linear":
                     return np.linspace(float(Eingabe_Startwert_Parameter.get()), float(Eingabe_Zielwert_Parameter.get()),
@@ -1102,7 +1102,7 @@ def regulate_current_rechts(target_current: float, var_i, step_size=0.05, max_it
 
 def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestellt):
     """
-    Funktion überprüft, ob eine Strommessung durchgeführt wird. Wenn beim Fluke als Messgröße "DC I"/"AC I" und/oder ein Messbereich >= 100mA
+    Die Funktion überprüft, ob eine Strommessung durchgeführt wird. Wenn beim Fluke als Messgröße "DC I"/"AC I" und/oder ein Messbereich >= 100mA
     ausgewählt wurde, wird eine Meldung ausgegeben, bei OK → True und bei Abbrechen → False
     :param messgroesse_eingestellt: ausgewählte Messgröße
     :param messbereich_eingestellt: ausgewählter Messbereich
@@ -1147,7 +1147,7 @@ def toggle_y_scale():
 
 def Messung():
     """
-    Hauptfunktion die beim Start der Messung ausgeführt wird:
+    Hauptfunktion, die beim Start der Messung ausgeführt wird:
     """
     Fluke_set_Range()
     HM8143_Quelle_remoteOn()
@@ -1213,7 +1213,6 @@ def Messung():
     x_i = 0
     messungStop = False
 
-
     para = Parameter_bestimmen()    # Erzeuge die Parameter anhand der ausgewählten Parametereinteilung
 
     # Initialisierung Progressbar
@@ -1274,8 +1273,14 @@ def Messung():
                     regulate_current_links(target_current=float(para_now), var_i=x_i)
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
+                case "Compliance links":
+                    HM8143_Quelle_StromBegrenzLinks(float(para_now))
+                    HM8143_Quelle_AusgangOn()
+                case "Compliance rechts":
+                    HM8143_Quelle_StromBegrenzRechts(float(para_now))
+                    HM8143_Quelle_AusgangOn()
 
-        sleep(1)  # Wartezeit nach Setzen von Parameter
+        sleep(1)  # Wartezeit nach Setzen von Parametern
 
         # Setze die Variable anhand der Auswahl
         while x_i < len(start_schritt_ziel) and (not messungStop):  # gehe Variablen durch für aktuellen Parameter
@@ -1428,16 +1433,16 @@ variable_options = ["Spannung links", "Spannung rechts", "Compliance links", "Co
 
 # Prüfe, ob die Pseudostromquelle in der Parameterauswahl angezeigt werden soll
 if config.pseudostromquelle_active:
-    parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "ohne Parameter"]
-    default_parameter = 4
+    parameter_options = ["Spannung links", "Spannung rechts", "Strom links", "Strom rechts", "Compliance links", "Compliance rechts", "ohne Parameter"]
+    default_parameter = 6
     strom_tooltip = ("Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant).\n"
                      "- die Variablen werden für jeden Parameter wiederholt durchlaufen.\n- der Wert in dem entsprechenden "
                      "Bedienelement wird ignoriert.\nACHTUNG: Wenn hier Ströme unter 10mA eingestellt werden, könnte es "
                      "zu einer unpräzisen Regelung kommen. (Pseudostromquelle)")
 
 else:
-    parameter_options = ["Spannung links", "Spannung rechts", "ohne Parameter"]
-    default_parameter = 2
+    parameter_options = ["Spannung links", "Spannung rechts", "Compliance links", "Compliance rechts", "ohne Parameter"]
+    default_parameter = 4
     strom_tooltip = ("Hier wird der Parameter ausgewählt (bleibt während einer Messreihe konstant).\n"
                      "- die Variablen werden für jeden Parameter wiederholt durchlaufen.\n- der Wert in dem entsprechenden "
                      "Bedienelement wird ignoriert.")
@@ -1650,7 +1655,7 @@ Combo_Variable = ttk.Combobox(
     Frame_Messung,
     state="readonly",
     values=variable_options,
-    width=15
+    width=17
 )
 Combo_Variable.current(0)
 ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert in dem entsprechenden "
@@ -1676,7 +1681,7 @@ Combo_Parameter = ttk.Combobox(
     Frame_Messung,
     state="readonly",
     values=parameter_options,
-    width=15
+    width=17
 )
 Combo_Parameter.current(default_parameter)
 ToolTip(Combo_Parameter, msg=strom_tooltip)
