@@ -2,7 +2,7 @@ import pyvisa # Protokoll und "Framework" für die Kommunikation mit Laborgerät
 import tkinter as tk    # GUI
 from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
 from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
-from tktooltip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
+from TkToolTip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
 from tkinter import filedialog  # Speichern von Dateien
 import matplotlib.pyplot as plt # Darstellung von Plots
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # GUI Integration von matplotlib (Plotfenster) in tkinter (Hauptfenster)
@@ -1226,7 +1226,7 @@ def Messung():
                 headers = [Combo_Messgroesse_Fluke.get()]
             else:
                 headers = make_headers_unique([Combo_Messgroesse_Fluke.get() + "_param_" + str(i) + "V" for i in para])
-        case "Strom links" | "Strom rechts":
+        case "Strom links" | "Strom rechts" | "Compliance links" | "Compliance rechts":
             if len(para) == 1:
                 headers = [Combo_Messgroesse_Fluke.get()]
             else:
@@ -1274,9 +1274,11 @@ def Messung():
                     # HM8143_Quelle_StromBegrenzLinksCC(para_now)
                     HM8143_Quelle_AusgangOn()
                 case "Compliance links":
+                    HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())
                     HM8143_Quelle_StromBegrenzLinks(float(para_now))
                     HM8143_Quelle_AusgangOn()
                 case "Compliance rechts":
+                    HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_StromBegrenzRechts(float(para_now))
                     HM8143_Quelle_AusgangOn()
 
@@ -1297,9 +1299,11 @@ def Messung():
                     HM8150_Freq_Frequenz(start_schritt_ziel[x_i,])
                     HM8150_Freq_OutputOn()
                 case "Compliance links":
+                    HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())
                     HM8143_Quelle_StromBegrenzLinks(start_schritt_ziel[x_i,])
                     HM8143_Quelle_AusgangOn()
                 case "Compliance rechts":
+                    HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())
                     HM8143_Quelle_StromBegrenzRechts(start_schritt_ziel[x_i,])
                     HM8143_Quelle_AusgangOn()
 
@@ -1363,7 +1367,8 @@ def Messung():
                       str(HM8143_Quelle_ZeigeSpannungLinks()) + "V(SET " +
                       str(HM8143_Quelle_ZeigeSpannungLinksGesetzt()) + ") I1:" +
                       str(HM8143_Quelle_ZeigeStromLinks()) + "A U2:" +
-                      str(HM8143_Quelle_ZeigeSpannungRechts()) + "V I2:" +
+                      str(HM8143_Quelle_ZeigeSpannungRechts()) + "V(SET " +
+                      str(HM8143_Quelle_ZeigeSpannungRechtsGesetzt()) + ") I2:" +
                       str(HM8143_Quelle_ZeigeStromRechts()) + "A")
             except Exception as e:
                 messungStop = True
@@ -1479,7 +1484,7 @@ style = ttk.Style()
 # Lokal
 Frame_Lokal = ttk.Frame(Frame_Steuerung)
 Button_Geraete_lokal = ttk.Button(Frame_Lokal, text="Geräte lokal bedienen", style='lokal.TButton', command=Geraete_lokal_bedienen)
-ToolTip(Button_Geraete_lokal, msg="Schaltet zwischen remote (Bedienelemente an den Gerätet sind gesperrt) und lokal um")
+ToolTip(Button_Geraete_lokal, text="Schaltet zwischen remote (Bedienelemente an den Gerätet sind gesperrt) und lokal um")
 
 # Lokal Design
 Frame_Lokal.pack(fill='x')
@@ -1493,10 +1498,10 @@ Label_Spannung_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spann
 
 Eingabe_Spannung_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
 Eingabe_Spannung_links_HM8143_Quelle.insert(0, "0.5")
-ToolTip(Eingabe_Spannung_links_HM8143_Quelle, msg="Setzt die Ausgangsspannung des linken Ausgangs: 0 - 30 [V]")
+ToolTip(Eingabe_Spannung_links_HM8143_Quelle, text="Setzt die Ausgangsspannung des linken Ausgangs: 0 - 30 [V]")
 Eingabe_Spannung_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())))
 Eingabe_Spannung_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
-ToolTip(Eingabe_Spannung_rechts_HM8143_Quelle, msg="Setzt die Ausgangsspannung des rechten Ausgangs: 0 - 30 [V]")
+ToolTip(Eingabe_Spannung_rechts_HM8143_Quelle, text="Setzt die Ausgangsspannung des rechten Ausgangs: 0 - 30 [V]")
 Eingabe_Spannung_rechts_HM8143_Quelle.insert(0, "0.5")
 Eingabe_Spannung_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())))
 
@@ -1505,14 +1510,14 @@ Label_Strom_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom re
 
 Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
-ToolTip(Eingabe_Strom_links_HM8143_Quelle, msg="Setzt die Strombegrenzung des linken Ausgangs: 0 - 2 [A] \n "
+ToolTip(Eingabe_Strom_links_HM8143_Quelle, text="Setzt die Strombegrenzung des linken Ausgangs: 0 - 2 [A] \n "
                                                "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
 Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", style='quelle.TButton', command=HM8143_Quelle_Toggle_Ausgang)
-ToolTip(Button_on_off_HM8143_Quelle, msg="Schaltet die Ausgänge des Netzgerätes an und aus")
+ToolTip(Button_on_off_HM8143_Quelle, text="Schaltet die Ausgänge des Netzgerätes an und aus")
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "1.0")
-ToolTip(Eingabe_Strom_rechts_HM8143_Quelle, msg="Setzt die Strombegrenzung des rechten Ausgangs: 0 - 2 [A] \n "
+ToolTip(Eingabe_Strom_rechts_HM8143_Quelle, text="Setzt die Strombegrenzung des rechten Ausgangs: 0 - 2 [A] \n "
                                                 "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
 Eingabe_Strom_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
 
@@ -1545,14 +1550,14 @@ Combo_Wellenform_HM8150_Freq = ttk.Combobox(
     width=13
 )
 Combo_Wellenform_HM8150_Freq.current(0)
-ToolTip(Combo_Wellenform_HM8150_Freq, msg="Setzt die Wellenform des Funktionsgenerators. "
+ToolTip(Combo_Wellenform_HM8150_Freq, text="Setzt die Wellenform des Funktionsgenerators. "
                                           "Es kann zwischen Sinus, Rechteck, Dreieck, Puls, und Sägezahn ausgewählt werden.")
 
 Combo_Wellenform_HM8150_Freq.bind("<<ComboboxSelected>>", (lambda event: HM8150_Freq_Wellenform(Combo_Wellenform_HM8150_Freq.get())))
 
 Eingabe_Amplitude_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Amplitude_HM8150_Freq.insert(0, "0.5")
-ToolTip(Eingabe_Amplitude_HM8150_Freq, msg="Legt die Amplitude des ausgegebenen Signals fest. \nACHTUNG: Der hier eingegebene Wert ist die "
+ToolTip(Eingabe_Amplitude_HM8150_Freq, text="Legt die Amplitude des ausgegebenen Signals fest. \nACHTUNG: Der hier eingegebene Wert ist die "
                                            "Spitze-Spitze-Spannung UPP des Ausgangssignals! Die tatsächliche Amplitude ist nur halb so hoch. Wenn das"
                                            " eingestellte Signal auf den Modulationseingang des Hameg Netzteils gelegt wird, "
                                            "dürfen maximal 10 V für UPP eingestellt werden. Sonst kann es zur Beschädigung der Geräte kommen.")
@@ -1560,7 +1565,7 @@ ToolTip(Eingabe_Amplitude_HM8150_Freq, msg="Legt die Amplitude des ausgegebenen 
 Eingabe_Amplitude_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())))
 Eingabe_Frequenz_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Frequenz_HM8150_Freq.insert(0, "1000")
-ToolTip(Eingabe_Frequenz_HM8150_Freq, msg="Legt die Frequenz des Ausgangssignals fest. Diese sollte bei Wechselstrommessung "
+ToolTip(Eingabe_Frequenz_HM8150_Freq, text="Legt die Frequenz des Ausgangssignals fest. Diese sollte bei Wechselstrommessung "
                                           "im Bereich zwischen 200 Hz und 10 kHz liegen. Bei Wechselspannungsmessungen "
                                           "kann die Frequenz zwischen 200 Hz und 8 kHz liegen. (Messbereichsgrenzen des Fluke) \n"
                                           "ACHTUNG: Wenn das eingestellte Signal auf den Modulationseingang des Hameg "
@@ -1570,16 +1575,16 @@ ToolTip(Eingabe_Frequenz_HM8150_Freq, msg="Legt die Frequenz des Ausgangssignals
 Eingabe_Frequenz_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())))
 Eingabe_Offset_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Offset_HM8150_Freq.insert(0, "0")
-ToolTip(Eingabe_Offset_HM8150_Freq, msg="Hier kann der Wert des Gleichspannungsanteils eingetragen werden, welcher zum "
+ToolTip(Eingabe_Offset_HM8150_Freq, text="Hier kann der Wert des Gleichspannungsanteils eingetragen werden, welcher zum "
                                         "Signal hinzuaddiert wird.")
 Eingabe_Offset_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Offset(Eingabe_Offset_HM8150_Freq.get())))
 
 Label_Output_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Output")
 Label_Offset_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Offset")
 Button_Output_on_off_HM8150_Freq = ttk.Button(Frame_HM8150_Freq, text="Off", style='freq.TButton', command=HM8150_Freq_Toggle_Output)
-ToolTip(Button_Output_on_off_HM8150_Freq, msg="Schaltet den Ausgang den Funktionsgenerators an bzw. aus")
+ToolTip(Button_Output_on_off_HM8150_Freq, text="Schaltet den Ausgang den Funktionsgenerators an bzw. aus")
 Button_Offset_on_off_HM8150_Freq = ttk.Button(Frame_HM8150_Freq, text="Off", command=HM8150_Freq_Toggle_Offset)
-ToolTip(Button_Offset_on_off_HM8150_Freq, msg="Schaltet den Gleichspannungsanteil an bzw. aus")
+ToolTip(Button_Offset_on_off_HM8150_Freq, text="Schaltet den Gleichspannungsanteil an bzw. aus")
 
 
 # HM8150 Design
@@ -1614,7 +1619,7 @@ Combo_Messgroesse_Fluke = ttk.Combobox(
     width=18
 )
 Combo_Messgroesse_Fluke.current(2)
-ToolTip(Combo_Messgroesse_Fluke, msg="Hier kann zwischen einer Gleichspanungs-, Wechselspannungs, Gleichsstrom-, "
+ToolTip(Combo_Messgroesse_Fluke, text="Hier kann zwischen einer Gleichspanungs-, Wechselspannungs, Gleichsstrom-, "
                                     "Wechselstrom und einer Widerstandsmessung gewählt werden.\n"
                                     "ACHTUNG: Bei einer Strommessung muss auf den richtigen Anschluss des Fluke "
                                     "geachtet werden!")
@@ -1629,7 +1634,7 @@ Combo_Messbereich_Fluke = ttk.Combobox(
 )
 
 Combo_Messbereich_Fluke.current(2)
-ToolTip(Combo_Messbereich_Fluke, msg="Hier wird der Messbereich des Multimeters bestimmt. Die Auswahlmöglichkeiten "
+ToolTip(Combo_Messbereich_Fluke, text="Hier wird der Messbereich des Multimeters bestimmt. Die Auswahlmöglichkeiten "
                                     "sind hier von der Messgröße abhängig.\n"
                                     "ACHTUNG: Bei einer Strommessung mit einem Messbereich über 100mA muss der "
                                     "entsprechende Anschluss am Fluke gewählt werden!")
@@ -1658,20 +1663,20 @@ Combo_Variable = ttk.Combobox(
     width=17
 )
 Combo_Variable.current(0)
-ToolTip(Combo_Variable, msg="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert in dem entsprechenden "
+ToolTip(Combo_Variable, text="Hier wird der für die Messung zu variierende Variable bestimmt. Der Wert in dem entsprechenden "
                      "Bedienelement wird ignoriert.")
 
 Combo_Variable.bind("<<ComboboxSelected>>", update_variable_options)
 
 Eingabe_Startwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Variable.insert(0, "0")
-ToolTip(Eingabe_Startwert_Variable, msg="Bei diesem Wert wird der erste Messpunkt der Kennlinie aufgenommen.")
+ToolTip(Eingabe_Startwert_Variable, text="Bei diesem Wert wird der erste Messpunkt der Kennlinie aufgenommen.")
 Eingabe_Schrittweite_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schrittweite_Variable.insert(0, "0.2")
-ToolTip(Eingabe_Schrittweite_Variable, msg="Hier wird der Abstand zwischen zwei Messpunkten (Variable) eingegeben.")
+ToolTip(Eingabe_Schrittweite_Variable, text="Hier wird der Abstand zwischen zwei Messpunkten (Variable) eingegeben.")
 Eingabe_Zielwert_Variable = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Variable.insert(0, "2")
-ToolTip(Eingabe_Zielwert_Variable, msg="Hier wird der Maximalwert der Variable angegeben.\nACHTUNG: Der Zielwert muss größer als der Startwert sein.")
+ToolTip(Eingabe_Zielwert_Variable, text="Hier wird der Maximalwert der Variable angegeben.\nACHTUNG: Der Zielwert muss größer als der Startwert sein.")
 
 Label_Auswahl_Parameter = tk.Label(Frame_Messung, text="Parameter")
 Label_Eingabe_Parameter = tk.Label(Frame_Messung, text="Parameter mit ; getrennt (z.B. 1;1.5;2)")
@@ -1684,7 +1689,7 @@ Combo_Parameter = ttk.Combobox(
     width=17
 )
 Combo_Parameter.current(default_parameter)
-ToolTip(Combo_Parameter, msg=strom_tooltip)
+ToolTip(Combo_Parameter, text=strom_tooltip)
 
 Combo_Parameter.bind("<<ComboboxSelected>>", Aktualisiere_Widgets_Parameter)
 
@@ -1696,13 +1701,13 @@ Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
 
 Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Parameter.insert(0, "1")
-ToolTip(Eingabe_Startwert_Parameter, msg="Startwert bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Startwert_Parameter, text="Startwert bei linear, quadratischer und logarithmischer Einteilung")
 Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Parameter.insert(0, "8")
-ToolTip(Eingabe_Zielwert_Parameter, msg="Zielwert bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Zielwert_Parameter, text="Zielwert bei linear, quadratischer und logarithmischer Einteilung")
 Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schritte_Parameter.insert(0, "1")
-ToolTip(Eingabe_Schritte_Parameter, msg="Anzahl der Werte bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Schritte_Parameter, text="Anzahl der Werte bei linear, quadratischer und logarithmischer Einteilung")
 
 Combo_Parameter_Einteilung = ttk.Combobox(
     Frame_Messung,
@@ -1711,7 +1716,7 @@ Combo_Parameter_Einteilung = ttk.Combobox(
     width=15
 )
 Combo_Parameter_Einteilung.current(3)
-ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter bestimmt.\n\n"
+ToolTip(Combo_Parameter_Einteilung, text="Hier wird die Aufteilung der Parameter bestimmt.\n\n"
                                         "linear: Erzeugt die eingestellte Anzahl (Schritte) der Parameter zwischen "
                                         "den Start- und Zielwert.\n\nquadratisch: Quadriert den Start- und Zielwert, "
                                         "generiert die festgelegte Anzahl von Parametern (Schritten) zwischen den "
@@ -1719,12 +1724,12 @@ ToolTip(Combo_Parameter_Einteilung, msg="Hier wird die Aufteilung der Parameter 
                                         "exponentiell: Exponenziert den Start- und Zielwert, generiert die festgelegte "
                                         "Anzahl von Parametern (Schritten) zwischen den Exponentialwerten und berechnet "
                                         "den Logarithmus der Werte.\n\n"
-                                        "manuell: Die gewünschten Parameter können manuell eingegeben werden.")
+                                        "manuell: Die gewünschten Parameter können manuell eingegeben werden.", delay=1, show_duration=1)
 
 Combo_Parameter_Einteilung.bind("<<ComboboxSelected>>", (lambda event: Aktualisiere_Widgets_Parameter_Eingabe(Combo_Parameter_Einteilung.get())))
 
 Eingabe_Parameter = ttk.Entry(Frame_Messung, width=32)
-ToolTip(Eingabe_Parameter, msg="Hier können Parameter manuell mit einem Semikolon ; getrennt eingegeben werden z.B 1;1.5;2")
+ToolTip(Eingabe_Parameter, text="Hier können Parameter manuell mit einem Semikolon ; getrennt eingegeben werden z.B 1;1.5;2")
 
 Button_Start_Messung = ttk.Button(Frame_Messung, text="Start", command=Messung, width=6)
 Button_Messdaten_Speichern = ttk.Button(Frame_Messung, text="Speichern", command=Save_Messdaten_to_File, width=9)
@@ -1767,17 +1772,17 @@ Combo_Messdelay = ttk.Combobox(
 )
 Combo_Messdelay.current(3)
 Combo_Messdelay.grid(column=0, row=6, padx=5, pady=3)
-ToolTip(Combo_Messdelay, msg="Messgeschwindigkeit (Wartezeit zwischen den Messungen): \n"
+ToolTip(Combo_Messdelay, text="Messgeschwindigkeit (Wartezeit zwischen den Messungen): \n"
                              "x0.5 = 1,2s, x1 = 600ms, x2 = 300ms, x5 = 100ms, x9")
 
 Button_Start_Messung.grid(column=1, row=6, padx=5, pady=3)
-ToolTip(Button_Start_Messung, msg="Hier wird die Messung gestartet. Die Ausgänge des Netzgerätes und des Frequenzgenerators werden automatisch "
+ToolTip(Button_Start_Messung, text="Hier wird die Messung gestartet. Die Ausgänge des Netzgerätes und des Frequenzgenerators werden automatisch "
                                   "angeschaltet, die eingestellte Variable jeweils für jeden Parameter variiert und an jedem Messpunkt ein Messwert "
                                   "aufgenommen.")
 Button_Messdaten_Speichern.grid(column=2, row=6, padx=5, pady=3)
-ToolTip(Button_Messdaten_Speichern, msg="Speichert die Messwerte unter dem ausgewählten Pfad als ."+config.format_export)
+ToolTip(Button_Messdaten_Speichern, text="Speichert die Messwerte unter dem ausgewählten Pfad als ."+config.format_export)
 Button_Stop_Messung.grid(column=3, row=6, padx=5, pady=3)
-ToolTip(Button_Stop_Messung, msg="Sollte sich bereits im Laufe der Messung herausstellen, dass die Daten fehlerhaft sind oder sonstige Komplikationen"
+ToolTip(Button_Stop_Messung, text="Sollte sich bereits im Laufe der Messung herausstellen, dass die Daten fehlerhaft sind oder sonstige Komplikationen"
                                  " auftreten, kann die Messung hier vorzeitig abgebrochen werden.")
 
 
