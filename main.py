@@ -2,7 +2,7 @@ import pyvisa # Protokoll und "Framework" für die Kommunikation mit Laborgerät
 import tkinter as tk    # GUI
 from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
 from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
-from TkToolTip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
+from tktooltip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
 from tkinter import filedialog  # Speichern von Dateien
 import matplotlib.pyplot as plt # Darstellung von Plots
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # GUI Integration von matplotlib (Plotfenster) in tkinter (Hauptfenster)
@@ -567,11 +567,11 @@ def Aktualisiere_Widgets_Parameter(event=None):
 def Aktualisiere_Widgets_Parameter_Eingabe(parameter_einteilung):
     """
     Aktiviere dynamisch die Widgets für die Einteilung der Parameter.
-    linear, quadratisch, exponentiell → aktiviere Start, Ziel, Schritte
+    linear, wurzelförmig, logarithmisch → aktiviere Start, Ziel, Schritte
     manuell → aktiviere Eingabefeld für Parameter
     """
     match parameter_einteilung:
-        case "linear" | "quadratisch" | "exponentiell":
+        case "linear" | "wurzelförmig" | "logarithmisch":
             Label_Eingabe_Parameter.grid_forget()
             Eingabe_Parameter.grid_forget()
             Label_Startwert_Parameter.grid(column=1, row=4, padx=5, pady=1)
@@ -728,16 +728,16 @@ def Parameter_bestimmen():
     - **`linear`**:
      - Erstellt eine gleichmäßig verteilte Sequenz von Werten zwischen dem Start- und Zielwert mit `numpy.linspace`.
 
-    - **`quadratisch`**:
-     - Wendet eine quadratische Beziehung an:
+    - **`wurzelförmig`**:
+     - Wendet eine wurzelförmige Beziehung an:
        - Die Start- und Zielwerte werden quadriert.
        - Eine Sequenz wird basierend auf den quadrierten Werten erstellt.
        - Anschließend werden die quadrierten Werte zurück in die Ursprungsdimension transformiert (Wurzel) und auf zwei Dezimalstellen gerundet.
 
-    - **`exponentiell`**:
-     - Wendet eine exponentielle Beziehung an:
+    - **`logarithmisch`**:
+     - Wendet eine logarithmische Beziehung an:
        - Die Start- und Zielwerte werden exponentiert.
-       - Eine Sequenz wird basierend auf den exponentiellen Werten erstellt.
+       - Eine Sequenz wird basierend auf den logarithmischen Werten erstellt.
        - Anschließend erfolgt eine logarithmische Transformation der Werte, die ebenfalls auf zwei Dezimalstellen gerundet werden.
 
     - **`manuell`**:
@@ -752,7 +752,7 @@ def Parameter_bestimmen():
                 case "linear":
                     return np.linspace(float(Eingabe_Startwert_Parameter.get()), float(Eingabe_Zielwert_Parameter.get()),
                                        num=int(Eingabe_Schritte_Parameter.get()))
-                case "quadratisch":
+                case "wurzelförmig":
                     i_min = np.square(float(Eingabe_Startwert_Parameter.get()))
                     i_max = np.square(float(Eingabe_Zielwert_Parameter.get()))
                     step = int(Eingabe_Schritte_Parameter.get())
@@ -760,7 +760,7 @@ def Parameter_bestimmen():
                     para = np.sqrt(i_vec)
                     para = np.round(para, decimals=2)
                     return para
-                case "exponentiell":
+                case "logarithmisch":
                     i_min = np.exp(float(Eingabe_Startwert_Parameter.get()))
                     i_max = np.exp(float(Eingabe_Zielwert_Parameter.get()))
                     step = int(Eingabe_Schritte_Parameter.get())
@@ -1169,7 +1169,7 @@ def Messung():
 
     # Prüfe die eingegebenen Parameter, wenn die Auswahl nicht "ohne Parameter" ist, manuell wird separat geprüft
     if Combo_Parameter.get() != "ohne Parameter":
-        if Combo_Parameter_Einteilung.get() in ("linear", "quadratisch", "exponentiell"):
+        if Combo_Parameter_Einteilung.get() in ("linear", "wurzelförmig", "logarithmisch"):
             parameter_check = Vali.validate_para_start_ziel_schritte(start=Eingabe_Startwert_Parameter.get(),
                                                                      ziel=Eingabe_Zielwert_Parameter.get(),
                                                                      schritte=Eingabe_Schritte_Parameter.get(),
@@ -1701,27 +1701,27 @@ Label_Schritte_Parameter = tk.Label(Frame_Messung, text="Schritte")
 
 Eingabe_Startwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Startwert_Parameter.insert(0, "1")
-ToolTip(Eingabe_Startwert_Parameter, text="Startwert bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Startwert_Parameter, text="Startwert bei linear, wurzelförmiger und logarithmischer Einteilung")
 Eingabe_Zielwert_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Zielwert_Parameter.insert(0, "8")
-ToolTip(Eingabe_Zielwert_Parameter, text="Zielwert bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Zielwert_Parameter, text="Zielwert bei linear, wurzelförmiger und logarithmischer Einteilung")
 Eingabe_Schritte_Parameter = ttk.Entry(Frame_Messung, width=6)
 Eingabe_Schritte_Parameter.insert(0, "1")
-ToolTip(Eingabe_Schritte_Parameter, text="Anzahl der Werte bei linear, quadratischer und logarithmischer Einteilung")
+ToolTip(Eingabe_Schritte_Parameter, text="Anzahl der Werte bei linear, wurzelförmiger und logarithmischer Einteilung")
 
 Combo_Parameter_Einteilung = ttk.Combobox(
     Frame_Messung,
     state="readonly",
-    values=["linear", "quadratisch", "exponentiell", "manuell"],
+    values=["linear", "wurzelförmig", "logarithmisch", "manuell"],
     width=15
 )
 Combo_Parameter_Einteilung.current(3)
 ToolTip(Combo_Parameter_Einteilung, text="Hier wird die Aufteilung der Parameter bestimmt.\n\n"
                                         "linear: Erzeugt die eingestellte Anzahl (Schritte) der Parameter zwischen "
-                                        "den Start- und Zielwert.\n\nquadratisch: Quadriert den Start- und Zielwert, "
+                                        "den Start- und Zielwert.\n\nwurzelförmig: Quadriert den Start- und Zielwert, "
                                         "generiert die festgelegte Anzahl von Parametern (Schritten) zwischen den "
                                         "quadrierten Werten und nimmt anschließend die Wurzel der erzeugten Werte.\n\n"
-                                        "exponentiell: Exponenziert den Start- und Zielwert, generiert die festgelegte "
+                                        "logarithmisch: Exponenziert den Start- und Zielwert, generiert die festgelegte "
                                         "Anzahl von Parametern (Schritten) zwischen den Exponentialwerten und berechnet "
                                         "den Logarithmus der Werte.\n\n"
                                         "manuell: Die gewünschten Parameter können manuell eingegeben werden.", delay=1, show_duration=1)
