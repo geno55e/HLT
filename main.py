@@ -2,7 +2,7 @@ import pyvisa # Protokoll und "Framework" für die Kommunikation mit Laborgerät
 import tkinter as tk    # GUI
 from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
 from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
-from tktooltip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
+from TkToolTip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
 from tkinter import filedialog  # Speichern von Dateien
 import matplotlib.pyplot as plt # Darstellung von Plots
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # GUI Integration von matplotlib (Plotfenster) in tkinter (Hauptfenster)
@@ -1111,10 +1111,12 @@ def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestell
     if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr! Ab "
                                                       "100mA auf richtigen Anschluss beim Fluke achten!")
-    if messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
+    elif messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, ab 100mA auf richtigen Anschluss beim Fluke achten!")
-    if messgroesse_eingestellt in ("DC I", "AC I"):
+    elif messgroesse_eingestellt in ("DC I", "AC I"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr!")
+    else:
+        return True
 
 
 def toggle_x_scale():
@@ -1188,11 +1190,12 @@ def Messung():
                 Widgets_entsperren()
                 return
 
-
+    TESTI = message_hinweis_strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get())
     # Prüfe ob Strommessung durchgeführt wird, beim Abbrechen wird Messung gestoppt
     if not message_hinweis_strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
         Widgets_entsperren()
         return
+
 
     # Wandle die Eingaben in float um und erzeuge die Variablen anhand der Werte
     start = float(Eingabe_Startwert_Variable.get())
