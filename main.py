@@ -2,7 +2,7 @@ import pyvisa # Protokoll und "Framework" für die Kommunikation mit Laborgerät
 import tkinter as tk    # GUI
 from tkinter import ttk # GUI (mehr Einstellungsmöglichkeiten)
 from tkinter import messagebox  # GUI (Ausgabe von Meldungen)
-from TkToolTip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
+from tktooltip import ToolTip   # GUI (Tooltips zur Beschreibung der Funktionen)
 from tkinter import filedialog  # Speichern von Dateien
 import matplotlib.pyplot as plt # Darstellung von Plots
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) # GUI Integration von matplotlib (Plotfenster) in tkinter (Hauptfenster)
@@ -46,6 +46,7 @@ def HM8143_Quelle_SpannungLinks(spannung):
     # print('SU1:' + str(spannung))
     my_instrument.write('SU1:' + str(spannung))
     my_instrument.close()
+    print('Spannung links eingestellt: ' + str(spannung))
 
 
 def HM8143_Quelle_SpannungRechts(spannung):
@@ -58,6 +59,7 @@ def HM8143_Quelle_SpannungRechts(spannung):
     # print('SU2:' + str(spannung))
     my_instrument.write('SU2:' + str(spannung))
     my_instrument.close()
+    print('Spannung rechts eingestellt: ' + str(spannung))
 
 
 def HM8143_Quelle_StromBegrenzLinks(strom):
@@ -69,6 +71,7 @@ def HM8143_Quelle_StromBegrenzLinks(strom):
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('SI1:' + str(strom))
     my_instrument.close()
+    print('Strom (Compliance) links eingestellt: ' + str(strom))
 
 
 def HM8143_Quelle_StromBegrenzRechts(strom):
@@ -80,6 +83,7 @@ def HM8143_Quelle_StromBegrenzRechts(strom):
     my_instrument = rm.open_resource(config.address_power_source, write_termination='\r', read_termination='\r')
     my_instrument.write('SI2:' + str(strom))
     my_instrument.close()
+    print('Strom (Compliance) rechts eingestellt: ' + str(strom))
 
 
 def HM8143_Quelle_AusgangOn():
@@ -355,6 +359,7 @@ def HM8150_Freq_Amplitude(amplitude):
     my_instrument.write('AMP:' + str(amplitude))
     my_instrument.write('DAM')
     my_instrument.close()
+    print("Amplitude eingestellt: " + str(amplitude))
 
 
 def HM8150_Freq_Frequenz(frequenz):
@@ -367,6 +372,7 @@ def HM8150_Freq_Frequenz(frequenz):
     my_instrument.write('FRQ:' + str(frequenz))
     my_instrument.write('DFR')
     my_instrument.close()
+    print("Frequenz eingestellt: " + str(frequenz))
 
 
 def HM8150_Freq_Offset(offset):
@@ -379,6 +385,7 @@ def HM8150_Freq_Offset(offset):
     my_instrument.write('OFS:' + str(offset))
     my_instrument.write('DOF')
     my_instrument.close()
+    print("Offset eingestellt: " + str(offset))
 
 
 # Fluke Multimeter 8846a
@@ -1111,12 +1118,10 @@ def message_hinweis_strommessung(messgroesse_eingestellt, messbereich_eingestell
     if messgroesse_eingestellt in ("DC I", "AC I") and messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr! Ab "
                                                       "100mA auf richtigen Anschluss beim Fluke achten!")
-    elif messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
+    if messbereich_eingestellt in ("100mA", "1A", "3A", "10A"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, ab 100mA auf richtigen Anschluss beim Fluke achten!")
-    elif messgroesse_eingestellt in ("DC I", "AC I"):
+    if messgroesse_eingestellt in ("DC I", "AC I"):
         return messagebox.askokcancel("Strommessung", "ACHTUNG, bei Strommessung die Verkabelung überprüfen, Kurzschlussgefahr!")
-    else:
-        return True
 
 
 def toggle_x_scale():
@@ -1190,12 +1195,11 @@ def Messung():
                 Widgets_entsperren()
                 return
 
-    TESTI = message_hinweis_strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get())
+
     # Prüfe ob Strommessung durchgeführt wird, beim Abbrechen wird Messung gestoppt
     if not message_hinweis_strommessung(Combo_Messgroesse_Fluke.get(), Combo_Messbereich_Fluke.get()):
         Widgets_entsperren()
         return
-
 
     # Wandle die Eingaben in float um und erzeuge die Variablen anhand der Werte
     start = float(Eingabe_Startwert_Variable.get())
@@ -1502,11 +1506,11 @@ Label_Spannung_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Spann
 Eingabe_Spannung_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
 Eingabe_Spannung_links_HM8143_Quelle.insert(0, "0.5")
 ToolTip(Eingabe_Spannung_links_HM8143_Quelle, text="Setzt die Ausgangsspannung des linken Ausgangs: 0 - 30 [V]")
-Eingabe_Spannung_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())))
+Eingabe_Spannung_links_HM8143_Quelle.bind("<FocusOut>", (lambda event: HM8143_Quelle_SpannungLinks(Eingabe_Spannung_links_HM8143_Quelle.get())))
 Eingabe_Spannung_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_voltage, "%P"))
 ToolTip(Eingabe_Spannung_rechts_HM8143_Quelle, text="Setzt die Ausgangsspannung des rechten Ausgangs: 0 - 30 [V]")
 Eingabe_Spannung_rechts_HM8143_Quelle.insert(0, "0.5")
-Eingabe_Spannung_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())))
+Eingabe_Spannung_rechts_HM8143_Quelle.bind("<FocusOut>", (lambda event: HM8143_Quelle_SpannungRechts(Eingabe_Spannung_rechts_HM8143_Quelle.get())))
 
 Label_Strom_links_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom links")
 Label_Strom_rechts_HM8143_Quelle = ttk.Label(Frame_HM8143_Quelle, text="Strom rechts")
@@ -1515,14 +1519,14 @@ Eingabe_Strom_links_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, vali
 Eingabe_Strom_links_HM8143_Quelle.insert(0, "0.015")
 ToolTip(Eingabe_Strom_links_HM8143_Quelle, text="Setzt die Strombegrenzung des linken Ausgangs: 0 - 2 [A] \n "
                                                "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
-Eingabe_Strom_links_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
+Eingabe_Strom_links_HM8143_Quelle.bind("<FocusOut>", (lambda event: HM8143_Quelle_StromBegrenzLinks(Eingabe_Strom_links_HM8143_Quelle.get())))
 Button_on_off_HM8143_Quelle = ttk.Button(Frame_HM8143_Quelle, text="Off", style='quelle.TButton', command=HM8143_Quelle_Toggle_Ausgang)
 ToolTip(Button_on_off_HM8143_Quelle, text="Schaltet die Ausgänge des Netzgerätes an und aus")
 Eingabe_Strom_rechts_HM8143_Quelle = ttk.Entry(Frame_HM8143_Quelle, width=7, validate="key", validatecommand=(vcmd_current, "%P"))
 Eingabe_Strom_rechts_HM8143_Quelle.insert(0, "1.0")
 ToolTip(Eingabe_Strom_rechts_HM8143_Quelle, text="Setzt die Strombegrenzung des rechten Ausgangs: 0 - 2 [A] \n "
                                                 "ACHTUNG: Bei mehr als 0.095A muss auf den richtigen Anschluss beim Fluke geachtet werden!")
-Eingabe_Strom_rechts_HM8143_Quelle.bind("<Return>", (lambda event: HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
+Eingabe_Strom_rechts_HM8143_Quelle.bind("<FocusOut>", (lambda event: HM8143_Quelle_StromBegrenzRechts(Eingabe_Strom_rechts_HM8143_Quelle.get())))
 
 # HM8143 Design
 Frame_HM8143_Quelle.pack(fill='x')
@@ -1565,7 +1569,7 @@ ToolTip(Eingabe_Amplitude_HM8150_Freq, text="Legt die Amplitude des ausgegebenen
                                            " eingestellte Signal auf den Modulationseingang des Hameg Netzteils gelegt wird, "
                                            "dürfen maximal 10 V für UPP eingestellt werden. Sonst kann es zur Beschädigung der Geräte kommen.")
 
-Eingabe_Amplitude_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())))
+Eingabe_Amplitude_HM8150_Freq.bind("<FocusOut>", (lambda event: HM8150_Freq_Amplitude(Eingabe_Amplitude_HM8150_Freq.get())))
 Eingabe_Frequenz_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Frequenz_HM8150_Freq.insert(0, "1000")
 ToolTip(Eingabe_Frequenz_HM8150_Freq, text="Legt die Frequenz des Ausgangssignals fest. Diese sollte bei Wechselstrommessung "
@@ -1575,12 +1579,12 @@ ToolTip(Eingabe_Frequenz_HM8150_Freq, text="Legt die Frequenz des Ausgangssignal
                                           "Netzteils gelegt wird, dürfen maximal 50 kHz eingestellt werden. Sonst kann es zur "
                                           "Beschädigung der Geräte kommen.")
 
-Eingabe_Frequenz_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())))
+Eingabe_Frequenz_HM8150_Freq.bind("<FocusOut>", (lambda event: HM8150_Freq_Frequenz(Eingabe_Frequenz_HM8150_Freq.get())))
 Eingabe_Offset_HM8150_Freq = ttk.Entry(Frame_HM8150_Freq, width=7)
 Eingabe_Offset_HM8150_Freq.insert(0, "0")
 ToolTip(Eingabe_Offset_HM8150_Freq, text="Hier kann der Wert des Gleichspannungsanteils eingetragen werden, welcher zum "
                                         "Signal hinzuaddiert wird.")
-Eingabe_Offset_HM8150_Freq.bind("<Return>", (lambda event: HM8150_Freq_Offset(Eingabe_Offset_HM8150_Freq.get())))
+Eingabe_Offset_HM8150_Freq.bind("<FocusOut>", (lambda event: HM8150_Freq_Offset(Eingabe_Offset_HM8150_Freq.get())))
 
 Label_Output_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Output")
 Label_Offset_Button_HM8150_Freq = ttk.Label(Frame_HM8150_Freq, text="Offset")
